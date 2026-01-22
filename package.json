@@ -1,0 +1,50 @@
+{
+  "name": "aleo-job-marketplace",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@demox-labs/aleo-wallet-adapter-base": "^0.0.23",
+    "@demox-labs/aleo-wallet-adapter-leo": "^0.0.25",
+    "@demox-labs/aleo-wallet-adapter-react": "^0.0.22",
+    "@demox-labs/aleo-wallet-adapter-reactui": "^0.0.36",
+    "@provablehq/aleo-types": "^0.3.0-alpha.1",
+    "@provablehq/aleo-wallet-adaptor-core": "^0.3.0-alpha.1",
+    "@provablehq/aleo-wallet-adaptor-fox": "^0.3.0-alpha.1",
+    "@provablehq/aleo-wallet-adaptor-leo": "^0.3.0-alpha.1",
+    "@provablehq/aleo-wallet-adaptor-puzzle": "^0.3.0-alpha.1",
+    "@provablehq/aleo-wallet-adaptor-react": "^0.3.0-alpha.1",
+    "@provablehq/aleo-wallet-adaptor-react-ui": "^0.3.0-alpha.1",
+    "@provablehq/aleo-wallet-adaptor-shield": "^0.3.0-alpha.1",
+    "@provablehq/sdk": "^0.8.7",
+    "@puzzlehq/sdk": "^1.0.3",
+    "@puzzlehq/sdk-core": "^1.0.3",
+    "aleo-adapters": "^1.2.1",
+    "aleo-hooks": "^1.0.3",
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.400.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.22.0",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.40",
+    "tailwindcss": "^3.4.7",
+    "typescript": "^5.5.4",
+    "vite": "^6.1.2"
+  }
+}

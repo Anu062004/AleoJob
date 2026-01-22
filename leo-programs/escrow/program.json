@@ -1,0 +1,15 @@
+{
+  "program": "job_marketplace_escrow_engine.aleo",
+  "version": "0.1.0",
+  "description": "Manages payment escrow for job completion",
+  "license": "MIT",
+  "dependencies": null,
+  "dev_dependencies": null
+}
+
+
+
+
+
+
+

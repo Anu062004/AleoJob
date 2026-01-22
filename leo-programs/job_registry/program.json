@@ -1,0 +1,15 @@
+{
+  "program": "job_registry.aleo",
+  "version": "0.1.0",
+  "description": "Manages private job postings and applications",
+  "license": "MIT",
+  "dependencies": null,
+  "dev_dependencies": null
+}
+
+
+
+
+
+
+
