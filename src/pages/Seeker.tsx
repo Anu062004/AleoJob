@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { Briefcase, Search, Star } from 'lucide-react';
@@ -71,9 +72,11 @@ function Seeker() {
                     <p className="text-slate-400 mb-6">
                         Browse available jobs and start building your anonymous reputation on AleoJob.
                     </p>
-                    <Button variant="primary">
-                        Browse Jobs
-                    </Button>
+                    <Link to="/jobs">
+                        <Button variant="primary">
+                            Browse Jobs
+                        </Button>
+                    </Link>
                 </Card>
             </motion.div>
         </div>

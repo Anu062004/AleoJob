@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { User, Briefcase, TrendingUp, Clock, CheckCircle2, Shield } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -241,9 +242,11 @@ function JobSeekerContent() {
           <Card className="p-6">
             <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <Button variant="primary" size="md" className="w-full" glow>
-                Browse Jobs
-              </Button>
+              <Link href="/jobs">
+                <Button variant="primary" size="md" className="w-full" glow>
+                  Browse Jobs
+                </Button>
+              </Link>
               <Button variant="secondary" size="md" className="w-full">
                 View Profile
               </Button>
