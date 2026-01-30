@@ -13,7 +13,7 @@
 
 <br />
 
-[**Live Demo**](https://aleojob.vercel.app) • [**Documentation**](#-documentation) • [**Get Started**](#-quick-start)
+[**Live Demo**](https://aleojob.vercel.app) • [**Get Started**](#-quick-start) • [**Documentation**](#-documentation)
 
 <br />
 
@@ -23,28 +23,50 @@
 
 ---
 
-## ✨ Overview
+## 📖 What is AleoJob?
 
-**AleoJob** is a privacy-preserving job marketplace that leverages Aleo's zero-knowledge proof technology to connect job seekers and employers while keeping sensitive data completely private.
+**AleoJob** is a decentralized job marketplace that uses **zero-knowledge proofs** to enable private, anonymous job matching. Built on the Aleo blockchain, it allows job seekers and employers to connect without exposing personal information, credentials, or transaction history.
 
-Unlike traditional platforms, AleoJob ensures:
-- 🔒 **Private Credentials** — Your identity is never exposed
+### Key Innovation
+
+Traditional job platforms require users to share personal data, work history, and salary expectations. AleoJob uses Aleo's private record system and zero-knowledge cryptography to verify qualifications and build reputation **without revealing identity**.
+
+### How It Works
+
+1. **Job Seekers** pay 1 Aleo credit to access the platform and browse jobs anonymously
+2. **Job Givers** pay 3 Aleo credits to post unlimited job listings
+3. **Applications** are submitted with encrypted credentials stored privately
+4. **Reputation** builds on-chain through completed jobs, all while maintaining privacy
+5. **Payments** are handled via escrow smart contracts for secure transactions
+
+### Privacy Guarantees
+
+- 🔒 **Identity Protection** — Your real identity is never exposed
 - 🛡️ **ZK Verification** — Prove qualifications without revealing personal data
-- 💰 **On-chain Payments** — Secure Aleo credit transactions
-- 🎭 **Anonymous Matching** — Connect with opportunities privately
+- 💰 **Private Transactions** — Payment amounts and addresses remain confidential
+- 🎭 **Anonymous Matching** — Connect with opportunities without doxxing
 
 ---
 
-## 🚀 Features
+## 🚀 Core Features
 
-| Feature | Description |
-|---------|-------------|
-| **🔐 Privacy-First** | Zero-knowledge proofs protect your identity throughout the hiring process |
-| **👔 Job Givers** | Post jobs privately, pay 3 Aleo credits, find qualified candidates |
-| **🔍 Job Seekers** | Browse opportunities, pay 1 Aleo credit, apply anonymously |
-| **🦁 Leo Wallet** | Seamless integration with Leo Wallet for secure authentication |
-| **⭐ Reputation System** | Build on-chain reputation without compromising privacy |
-| **📊 Dashboard** | Beautiful, modern UI to manage applications and postings |
+### For Job Seekers
+- **Anonymous Job Browsing** — Browse all available opportunities without revealing identity
+- **Private Applications** — Submit encrypted resumes and cover letters
+- **Reputation Building** — Build verifiable on-chain reputation scores
+- **Secure Payments** — Receive payments through escrow smart contracts
+
+### For Job Givers
+- **Private Job Postings** — Post jobs with budget ranges visible only to matched candidates
+- **Candidate Discovery** — Find qualified applicants through ZK-verified credentials
+- **Reputation Tracking** — Build trust through on-chain reputation scores
+- **Payment Management** — Secure escrow system for job completion
+
+### Platform Features
+- **Leo Wallet Integration** — Seamless connection with Aleo's official wallet
+- **Zero-Knowledge Proofs** — Verify qualifications without exposing data
+- **On-Chain Reputation** — Transparent reputation system with privacy protection
+- **Modern UI/UX** — Premium dark theme with intuitive dashboards
 
 ---
 
@@ -87,102 +109,175 @@ Unlike traditional platforms, AleoJob ensures:
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
-- [Leo Wallet](https://leo.app/) browser extension
+Before you begin, ensure you have:
+- **Node.js 18+** installed
+- **npm** or **yarn** package manager
+- **Leo Wallet** browser extension ([Download here](https://leo.app/))
+- **Git** for cloning the repository
 
-### Installation
+### Installation Steps
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/aleojob.git
-cd aleojob
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Anu062004/AleoJob.git
+   cd AleoJob
+   ```
 
-# Install dependencies
-npm install
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Set up environment variables
-cp .env.example .env.local
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Then edit `.env.local` with your configuration (see [Environment Variables](#-environment-variables) section below)
 
-# Start development server
-npm run dev
-```
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+6. **Connect your wallet**
+   Install the Leo Wallet extension and connect to the Aleo testnet to start using the platform.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-aleojob/
-├── app/                    # Next.js App Router pages
-│   ├── giver/             # Job Giver dashboard
-│   ├── seeker/            # Job Seeker dashboard
-│   ├── login/             # Authentication flow
-│   ├── jobs/              # Job listings
-│   ├── leaderboard/       # Reputation rankings
-│   └── api/               # API routes
-├── components/            # Reusable UI components
-│   ├── ui/               # Base UI components
-│   ├── PaymentGate.tsx   # Payment barrier component
-│   ├── WalletProvider.tsx # Aleo wallet context
-│   └── ConnectWalletButton.tsx
-├── leo-programs/          # Aleo Leo smart contracts
-├── lib/                   # Utilities and clients
-└── hooks/                 # Custom React hooks
+AleoJob/
+├── app/                          # Next.js 14 App Router
+│   ├── api/                     # API routes (Next.js API)
+│   │   ├── aleo/               # Aleo blockchain interactions
+│   │   ├── jobs/                # Job management endpoints
+│   │   ├── profile/            # User profile endpoints
+│   │   └── reputation/          # Reputation calculation
+│   ├── giver/                   # Job Giver dashboard page
+│   ├── seeker/                  # Job Seeker dashboard page
+│   ├── jobs/                    # Job listings and details
+│   ├── leaderboard/             # Reputation leaderboard
+│   ├── page.tsx                 # Landing page
+│   └── layout.tsx               # Root layout
+├── components/                   # React components
+│   ├── ui/                      # Base UI components (Button, Card, Badge, etc.)
+│   ├── Header.tsx               # Navigation header
+│   ├── WalletProvider.tsx        # Aleo wallet context provider
+│   ├── PaymentGate.tsx          # Payment barrier component
+│   ├── ProfileEditor.tsx        # Profile management
+│   └── CVUpload.tsx             # Resume upload component
+├── leo-programs/                # Aleo Leo smart contracts
+│   ├── access_control/          # Access control program
+│   ├── job_registry/            # Job registry program
+│   ├── reputation/              # Reputation program
+│   └── escrow/                  # Escrow program
+├── lib/                         # Utilities and services
+│   ├── aleo-client.ts          # Aleo blockchain client
+│   ├── aleo-service.ts         # Aleo service layer
+│   ├── supabaseClient.ts       # Supabase client
+│   └── credit-transfer.ts      # Credit transfer utilities
+├── backend/                     # Backend utilities
+│   └── lib/                    # Server-side libraries
+└── supabase/                    # Database migrations
+    └── migrations/             # SQL migration files
 ```
 
 ---
 
 ## 🔑 Wallet Integration
 
-AleoJob uses the official Aleo wallet adapter for secure authentication:
+AleoJob integrates with the **Leo Wallet** using the official Aleo wallet adapter. The wallet is required for:
+
+- **Authentication** — Connect your Aleo address to the platform
+- **Payments** — Pay access fees (1 credit for seekers, 3 for givers)
+- **Transactions** — Interact with Leo smart contracts
+- **Identity** — Your wallet address serves as your anonymous identity
+
+### Usage Example
 
 ```tsx
-import { useWallet } from '@demox-labs/aleo-wallet-adapter-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 
 function MyComponent() {
-  const { publicKey, connected } = useWallet();
+  const { connected, address, executeTransaction } = useWallet();
   
   if (!connected) {
     return <ConnectWalletButton />;
   }
   
-  return <div>Connected: {publicKey}</div>;
+  return <div>Connected: {address}</div>;
 }
 ```
+
+### Getting Testnet Credits
+
+To use AleoJob on testnet, you'll need Aleo testnet credits. You can obtain them from:
+- [Aleo Faucet](https://faucet.aleo.org/) (if available)
+- Aleo Discord community
+- Testnet credit distribution channels
 
 ---
 
 ## 💳 Payment System
 
-| Role | Cost | Access |
-|------|------|--------|
-| **Job Giver** | 3 Aleo | Post unlimited jobs |
-| **Job Seeker** | 1 Aleo | View & apply to all jobs |
+AleoJob uses a simple, transparent fee structure:
 
-Payments are processed on-chain using Aleo credits.
+| Role | One-Time Fee | What You Get |
+|------|-------------|--------------|
+| **Job Giver** | 3 Aleo Credits | Post unlimited jobs, access all features |
+| **Job Seeker** | 1 Aleo Credit | Browse all jobs, apply to opportunities |
+
+### How Payments Work
+
+1. **Access Payment** — One-time payment processed on-chain via Leo smart contracts
+2. **Private Records** — Payment verification stored in private Aleo records
+3. **Lifetime Access** — Pay once per wallet address for unlimited use
+4. **No Hidden Fees** — Transparent pricing with no recurring charges
+
+> 💡 **Note**: Payments are processed on Aleo testnet. Testnet credits have no real value and are for development/testing only.
 
 ---
 
 ## 🧪 Leo Smart Contracts
 
-The platform uses Leo programs for on-chain logic:
+AleoJob uses four core Leo programs deployed on the Aleo blockchain:
+
+### Available Programs
+
+1. **Access Control** (`access_control.aleo`)
+   - Manages paid access for job seekers (1 credit) and job givers (3 credits)
+   - Issues private access records for platform entry
+
+2. **Job Registry** (`job_registry.aleo`)
+   - Handles private job postings and applications
+   - Stores job details in private records visible only to matched parties
+
+3. **Reputation** (`reputation.aleo`)
+   - Tracks on-chain reputation scores for both seekers and givers
+   - Updates reputation privately after job completion
+
+4. **Escrow** (`job_marketplace_escrow_engine.aleo`)
+   - Manages payment escrow for job completion
+   - Secures payments until work is verified
+
+### Building and Deploying
 
 ```bash
-# Build Leo program
-cd leo-programs
+# Navigate to a program directory
+cd leo-programs/access_control
+
+# Build the program
 leo build
 
-# Deploy to testnet
+# Deploy to testnet (requires Aleo credits)
 leo deploy --network testnet
 ```
 
-### Key Programs
-- **Membership Badge** — Private membership verification
-- **Job Posting** — Create and manage job listings
-- **Reputation** — Track on-chain reputation scores
+> 📝 **Note**: All programs are currently deployed on Aleo testnet. Production deployment requires mainnet Aleo credits.
 
 ---
 
@@ -190,38 +285,89 @@ leo deploy --network testnet
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
+| `npm run dev` | Start Next.js development server (port 3000) |
+| `npm run build` | Build the application for production |
+| `npm run start` | Start the production server |
+| `npm run lint` | Run ESLint to check code quality |
+
+### Development Workflow
+
+```bash
+# Start development with hot reload
+npm run dev
+
+# Build for production
+npm run build
+
+# Run production build locally
+npm run start
+
+# Check code quality
+npm run lint
+```
 
 ---
 
 ## 🌐 Environment Variables
 
-Create a `.env.local` file:
+Create a `.env.local` file in the root directory. You can copy from `.env.example`:
+
+```bash
+cp .env.example .env.local
+```
+
+### Required Configuration
 
 ```env
 # Aleo Network Configuration
 NEXT_PUBLIC_ALEO_NETWORK=testnet
 NEXT_PUBLIC_ALEO_RPC_URL=https://api.explorer.aleo.org/v1
-
-# Optional: Default test credentials
-NEXT_PUBLIC_ALEO_PRIVATE_KEY=your_private_key
-NEXT_PUBLIC_ALEO_ADDRESS=your_address
 ```
+
+### Optional Configuration
+
+For development/testing purposes, you can optionally add:
+
+```env
+# Supabase Configuration (if using database features)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Note: Never commit .env.local to version control
+# Private keys and sensitive credentials should be kept secure
+```
+
+> ⚠️ **Security Note**: Never commit your `.env.local` file or share private keys. The `.env.example` file contains only placeholder values for reference.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) first.
+We welcome contributions! Here's how you can help:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/your-feature-name`)
+3. **Make your changes** and test thoroughly
+4. **Commit with clear messages** (`git commit -m 'Add: description of changes'`)
+5. **Push to your fork** (`git push origin feature/your-feature-name`)
+6. **Open a Pull Request** with a detailed description
+
+### Contribution Guidelines
+
+- Follow the existing code style and conventions
+- Add comments for complex logic
+- Update documentation for new features
+- Test your changes before submitting
+- Keep commits focused and atomic
+
+### Areas for Contribution
+
+- 🐛 Bug fixes and improvements
+- ✨ New features and enhancements
+- 📚 Documentation improvements
+- 🎨 UI/UX enhancements
+- 🧪 Test coverage
+- 🔒 Security improvements
 
 ---
 
@@ -231,11 +377,32 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ---
 
+## 🏗️ Architecture
+
+AleoJob uses a **hybrid architecture** combining on-chain and off-chain components:
+
+### On-Chain (Aleo Blockchain)
+- **Smart Contracts** — Leo programs for access control, job registry, reputation, and escrow
+- **Private Records** — Encrypted data storage for sensitive information
+- **Payment Processing** — On-chain credit transfers and verification
+
+### Off-Chain (Supabase)
+- **Database** — PostgreSQL for efficient querying and indexing
+- **File Storage** — Encrypted resume/CV storage
+- **API Layer** — Next.js API routes for business logic
+
+### How They Work Together
+
+1. **ZK Proof Hashes** — Bridge on-chain verification with off-chain data
+2. **Private Records** — Sensitive data stored on-chain, metadata off-chain
+3. **Hybrid Queries** — Fast searches using database, verification using blockchain
+
 ## 🙏 Acknowledgments
 
-- [Aleo](https://aleo.org/) — For building the privacy-focused blockchain
-- [Demox Labs](https://demoxlabs.xyz/) — For the Leo Wallet adapter
-- [Vercel](https://vercel.com/) — For hosting and deployment
+- **[Aleo](https://aleo.org/)** — For building the privacy-focused blockchain with native ZK support
+- **[Provable Labs](https://provable.xyz/)** — For the Leo Wallet adapter
+- **[Vercel](https://vercel.com/)** — For hosting and deployment infrastructure
+- **[Supabase](https://supabase.com/)** — For database and storage services
 
 ---
 
