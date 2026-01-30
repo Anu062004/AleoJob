@@ -28,7 +28,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
       {isOpen && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -36,18 +36,18 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           />
           <motion.div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-slate-800 rounded-2xl border border-slate-700 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-bg-elevated rounded-2xl border border-border-subtle max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
               {title && (
-                <div className="flex items-center justify-between p-6 border-b border-slate-700">
-                  <h2 className="text-2xl font-bold text-white">{title}</h2>
+                <div className="flex items-center justify-between p-6 border-b border-border-subtle">
+                  <h2 className="text-2xl font-bold text-text-primary">{title}</h2>
                   <button
                     onClick={onClose}
-                    className="text-slate-400 hover:text-white transition-colors"
+                    className="text-text-secondary hover:text-text-primary transition-colors p-1 hover:bg-bg-hover rounded-lg"
                   >
                     <X size={24} />
                   </button>

@@ -1,264 +1,144 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Shield, TrendingUp, Lock, Wallet, CheckCircle2, ArrowRight } from 'lucide-react';
-import { Card } from '../components/ui/Card';
+import { Shield, Lock, TrendingUp, Wallet, ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-
-const features = [
-    {
-        icon: Shield,
-        title: 'Privacy First',
-        description: 'Your identity stays private. Aleo ZK proofs verify credentials without revealing who you are.',
-    },
-    {
-        icon: TrendingUp,
-        title: 'Real Reputation',
-        description: 'Build trust through verifiable reputation scores, all without exposing personal data.',
-    },
-    {
-        icon: Lock,
-        title: 'Secure Escrow',
-        description: 'Payment held in escrow until job completion. Transparent, secure, automated.',
-    },
-    {
-        icon: Wallet,
-        title: 'Fair Access',
-        description: 'Simple, transparent fees. Job Seekers: 1 credit. Job Givers: 3 credits.',
-    },
-];
-
-const steps = [
-    {
-        number: '01',
-        title: 'Choose Your Role',
-        description: 'Join as a Job Seeker or Job Giver. Connect your Aleo wallet.',
-    },
-    {
-        number: '02',
-        title: 'Verify Privately',
-        description: 'Aleo ZK proofs verify your credentials without exposing identity.',
-    },
-    {
-        number: '03',
-        title: 'Work Anonymously',
-        description: 'Complete jobs, build reputation, get paid—all while staying private.',
-    },
-];
 
 function Home() {
     return (
-        <div className="min-h-screen relative">
-            {/* Hero Section */}
-            <section className="container mx-auto px-4 py-24 lg:py-32">
-                <motion.div
-                    className="max-w-5xl mx-auto text-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                >
-                    <motion.h1
-                        className="text-5xl md:text-7xl font-bold mb-6 text-gradient glow-text"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                    >
-                        Private Jobs. Real Reputation.
-                        <br />
-                        <span className="text-white">Zero Doxxing.</span>
-                    </motion.h1>
+        <div className="min-h-screen">
+            {/* Hero */}
+            <section className="py-24 md:py-32">
+                <div className="container mx-auto px-6 max-w-4xl">
+                    <div className="text-center">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-sm font-medium mb-8">
+                            <Shield size={14} />
+                            Built on Aleo
+                        </div>
 
-                    <motion.p
-                        className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                    >
-                        The privacy-preserving job marketplace built on Aleo. Work, earn, and build reputation
-                        without ever revealing your identity.
-                    </motion.p>
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white leading-tight tracking-tight mb-6">
+                            Private work.
+                            <br />
+                            <span className="text-slate-400">Verified reputation.</span>
+                        </h1>
 
-                    <motion.div
-                        className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                    >
-                        <Link to="/get-started">
-                            <Button variant="primary" size="lg" glow className="w-full sm:w-auto">
-                                Find Work
-                                <ArrowRight className="inline ml-2" size={20} />
-                            </Button>
-                        </Link>
-                        <Link to="/get-started">
-                            <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                                Post a Job
-                            </Button>
-                        </Link>
-                    </motion.div>
-                </motion.div>
+                        <p className="text-lg text-slate-400 mb-10 max-w-xl mx-auto leading-relaxed">
+                            A job marketplace where you work and earn without exposing your identity.
+                            Zero-knowledge proofs handle verification.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <Link to="/get-started">
+                                <Button variant="primary" size="lg">
+                                    Get Started
+                                    <ArrowRight className="ml-2" size={16} />
+                                </Button>
+                            </Link>
+                            <Link to="/jobs">
+                                <Button variant="secondary" size="lg">
+                                    Browse Jobs
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            {/* Features Section */}
-            <section className="container mx-auto px-4 py-16 lg:py-24">
-                <motion.div
-                    className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                >
-                    {features.map((feature, index) => {
-                        const Icon = feature.icon;
-                        return (
-                            <motion.div
-                                key={feature.title}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: index * 0.1 }}
-                            >
-                                <Card hover glow className="p-6 h-full">
-                                    <div className="w-12 h-12 bg-aleo-purple/20 rounded-xl flex items-center justify-center mb-4">
-                                        <Icon className="text-aleo-purple-light" size={24} />
-                                    </div>
-                                    <h3 className="text-xl font-semibold mb-2 text-white">{feature.title}</h3>
-                                    <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
-                                </Card>
-                            </motion.div>
-                        );
-                    })}
-                </motion.div>
-            </section>
+            {/* How it works */}
+            <section className="py-20 border-t border-slate-800">
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <div className="text-center mb-16">
+                        <h2 className="text-2xl font-semibold text-white mb-3">How it works</h2>
+                        <p className="text-slate-500">Four steps to private employment</p>
+                    </div>
 
-            {/* How It Works */}
-            <section className="container mx-auto px-4 py-16 lg:py-24">
-                <motion.div
-                    className="text-center mb-16"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                >
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">How It Works</h2>
-                    <p className="text-slate-400 text-lg">Three simple steps to start earning privately</p>
-                </motion.div>
-
-                <div className="max-w-4xl mx-auto">
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {steps.map((step, index) => (
-                            <motion.div
-                                key={step.number}
-                                className="relative"
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: index * 0.2 }}
-                            >
-                                <Card className="p-8 h-full">
-                                    <div className="text-6xl font-bold text-aleo-purple/20 mb-4">{step.number}</div>
-                                    <h3 className="text-2xl font-semibold mb-3 text-white">{step.title}</h3>
-                                    <p className="text-slate-400">{step.description}</p>
-                                </Card>
-                                {index < steps.length - 1 && (
-                                    <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-aleo-purple/30">
-                                        <ArrowRight className="absolute -right-2 top-1/2 -translate-y-1/2 text-aleo-purple" size={16} />
-                                    </div>
-                                )}
-                            </motion.div>
+                    <div className="grid md:grid-cols-4 gap-px bg-slate-800 rounded-2xl overflow-hidden">
+                        {[
+                            { num: '01', title: 'Connect', desc: 'Link your Aleo wallet' },
+                            { num: '02', title: 'Prove', desc: 'Generate ZK credentials' },
+                            { num: '03', title: 'Work', desc: 'Match and complete jobs' },
+                            { num: '04', title: 'Earn', desc: 'Get paid via escrow' },
+                        ].map((step) => (
+                            <div key={step.num} className="bg-slate-900 p-6 md:p-8">
+                                <div className="text-violet-500 font-mono text-xs mb-4">{step.num}</div>
+                                <h3 className="text-white font-medium mb-1">{step.title}</h3>
+                                <p className="text-slate-500 text-sm">{step.desc}</p>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Aleo-Powered Section */}
-            <section className="container mx-auto px-4 py-16 lg:py-24">
-                <Card glow className="p-12 max-w-4xl mx-auto text-center">
-                    <Shield className="mx-auto mb-6 text-aleo-purple-light" size={48} />
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                        Powered by Aleo Zero-Knowledge Proofs
-                    </h2>
-                    <p className="text-slate-300 text-lg mb-6 max-w-2xl mx-auto">
-                        AleoJob uses advanced zero-knowledge cryptography to verify your qualifications,
-                        reputation, and work history—all without ever knowing who you are.
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-400">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="text-emerald-400" size={16} />
-                            <span>Identity stays private</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="text-emerald-400" size={16} />
-                            <span>Credentials verified via ZK</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="text-emerald-400" size={16} />
-                            <span>No tracking, no surveillance</span>
-                        </div>
+            {/* Features */}
+            <section className="py-20 border-t border-slate-800">
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {[
+                            {
+                                icon: Shield,
+                                title: 'Zero-Knowledge Identity',
+                                desc: 'Prove qualifications without revealing personal data.'
+                            },
+                            {
+                                icon: TrendingUp,
+                                title: 'Verifiable Reputation',
+                                desc: 'Build trust through on-chain job completions.'
+                            },
+                            {
+                                icon: Lock,
+                                title: 'Escrow Payments',
+                                desc: 'Funds held securely until verified completion.'
+                            },
+                            {
+                                icon: Wallet,
+                                title: 'Simple Pricing',
+                                desc: 'Seekers: 1 credit. Givers: 3 credits.'
+                            },
+                        ].map((feature) => {
+                            const Icon = feature.icon;
+                            return (
+                                <div key={feature.title} className="flex gap-4 p-6 rounded-xl bg-slate-900/50 border border-slate-800">
+                                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center">
+                                        <Icon size={18} className="text-violet-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-medium mb-1">{feature.title}</h3>
+                                        <p className="text-slate-500 text-sm">{feature.desc}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </Card>
+                </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="container mx-auto px-4 py-16 lg:py-24">
-                <motion.div
-                    className="text-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                >
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-                        Ready to Work Privately?
-                    </h2>
-                    <p className="text-slate-400 text-lg mb-8">
-                        Join AleoJob and experience the future of private job marketplaces.
-                    </p>
+            {/* CTA */}
+            <section className="py-20 border-t border-slate-800">
+                <div className="container mx-auto px-6 text-center">
+                    <h2 className="text-2xl font-semibold text-white mb-3">Ready to start?</h2>
+                    <p className="text-slate-500 mb-8">Connect your wallet and begin.</p>
                     <Link to="/get-started">
-                        <Button variant="primary" size="lg" glow>
-                            Get Started Now
-                            <ArrowRight className="inline ml-2" size={20} />
+                        <Button variant="primary" size="lg">
+                            Get Started
+                            <ArrowRight className="ml-2" size={16} />
                         </Button>
                     </Link>
-                </motion.div>
+                </div>
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-slate-700/50 mt-24">
-                <div className="container mx-auto px-4 py-12">
-                    <div className="grid md:grid-cols-4 gap-8 mb-8">
-                        <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <Shield size={24} className="text-aleo-purple-light" />
-                                <span className="text-xl font-bold text-white">AleoJob</span>
+            <footer className="border-t border-slate-800 py-8">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-violet-600 rounded flex items-center justify-center">
+                                <Shield size={12} className="text-white" />
                             </div>
-                            <p className="text-slate-400 text-sm">
-                                Privacy-preserving job marketplace on Aleo blockchain.
-                            </p>
+                            <span className="font-medium text-white text-sm">AleoJob</span>
                         </div>
-                        <div>
-                            <h4 className="font-semibold mb-4 text-white">Platform</h4>
-                            <ul className="space-y-2 text-sm text-slate-400">
-                                <li><Link to="/jobs" className="hover:text-white transition-colors">Browse Jobs</Link></li>
-                                <li><Link to="/leaderboard" className="hover:text-white transition-colors">Leaderboard</Link></li>
-                                <li><Link to="/get-started" className="hover:text-white transition-colors">Get Started</Link></li>
-                            </ul>
+                        <div className="flex gap-6 text-sm text-slate-500">
+                            <Link to="/jobs" className="hover:text-white transition-colors">Jobs</Link>
+                            <Link to="/leaderboard" className="hover:text-white transition-colors">Leaderboard</Link>
+                            <a href="https://aleo.org" target="_blank" rel="noopener" className="hover:text-white transition-colors">Aleo</a>
                         </div>
-                        <div>
-                            <h4 className="font-semibold mb-4 text-white">Resources</h4>
-                            <ul className="space-y-2 text-sm text-slate-400">
-                                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold mb-4 text-white">About</h4>
-                            <ul className="space-y-2 text-sm text-slate-400">
-                                <li><a href="#" className="hover:text-white transition-colors">How It Works</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Reputation System</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-slate-700/50 pt-8 text-center text-sm text-slate-400">
-                        <p>&copy; 2024 AleoJob. Built on Aleo blockchain.</p>
                     </div>
                 </div>
             </footer>

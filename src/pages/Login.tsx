@@ -1,24 +1,24 @@
-import { motion } from 'framer-motion';
+import { Shield } from 'lucide-react';
 import { Card } from '../components/ui/Card';
+import ConnectWallet from '../components/ConnectWallet';
 
 function Login() {
     return (
-        <div className="container mx-auto px-4 py-16">
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="max-w-md mx-auto"
-            >
-                <Card className="p-8">
-                    <h1 className="text-2xl font-bold mb-4 text-white text-center">Login</h1>
-                    <p className="text-slate-400 text-center mb-6">
-                        Connect your Aleo wallet to continue
-                    </p>
-                    <p className="text-sm text-slate-500 text-center">
-                        Use the "Connect Wallet" button in the header to authenticate.
-                    </p>
-                </Card>
-            </motion.div>
+        <div className="min-h-screen flex items-center justify-center px-4">
+            <Card padding="lg" className="max-w-md w-full text-center">
+                <div className="w-12 h-12 bg-aleo-purple rounded-xl flex items-center justify-center mx-auto mb-6">
+                    <Shield size={24} className="text-white" />
+                </div>
+                <h1 className="text-2xl font-semibold text-text-primary mb-2">
+                    Connect Wallet
+                </h1>
+                <p className="text-text-secondary mb-8">
+                    Connect your Aleo wallet to continue
+                </p>
+                <div className="flex justify-center">
+                    <ConnectWallet />
+                </div>
+            </Card>
         </div>
     );
 }

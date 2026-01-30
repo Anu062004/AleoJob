@@ -14,27 +14,31 @@ export function Header() {
   ];
 
   return (
-    <header className="border-b border-slate-700/50 backdrop-blur-sm bg-slate-900/30 sticky top-0 z-40">
+    <header className="border-b border-border-subtle bg-glass-elevated sticky top-0 z-50 backdrop-blur-xl">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="p-2 bg-gradient-to-br from-aleo-purple to-aleo-purple-light rounded-lg group-hover:scale-110 transition-transform">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="p-2 bg-gradient-to-br from-accent-primary to-accent-primary-hover rounded-xl group-hover:scale-105 transition-transform duration-200 shadow-lg shadow-accent-primary/20">
               <Shield size={20} className="text-white" />
             </div>
-            <span className="text-xl font-bold text-gradient">AleoJob</span>
+            <span className="text-xl font-bold text-gradient tracking-tight">AleoJob</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${pathname === link.href
-                    ? 'text-aleo-purple-light'
-                    : 'text-slate-400 hover:text-white'
-                  }`}
+                className={`text-sm font-medium transition-colors relative ${
+                  pathname === link.href
+                    ? 'text-accent-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
               >
                 {link.label}
+                {pathname === link.href && (
+                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-primary rounded-full" />
+                )}
               </Link>
             ))}
           </nav>

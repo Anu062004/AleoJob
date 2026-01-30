@@ -12,12 +12,13 @@ export function Card({ children, className = '', hover = true, glow = false }: C
   return (
     <motion.div
       className={`
-        bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50
-        ${glow ? 'shadow-lg shadow-aleo-purple/20' : ''}
+        bg-bg-elevated backdrop-blur-sm rounded-2xl border border-border-subtle
+        ${glow ? 'shadow-card-hover border-border-accent' : 'shadow-card'}
+        ${hover ? 'hover:border-border-accent hover:shadow-card-hover' : ''}
+        transition-all duration-200
         ${className}
       `}
-      whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : {}}
-      transition={{ duration: 0.2 }}
+      whileHover={hover ? { y: -2, transition: { duration: 0.2 } } : {}}
     >
       {children}
     </motion.div>

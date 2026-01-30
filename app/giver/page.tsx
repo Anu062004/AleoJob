@@ -81,18 +81,17 @@ function JobGiverContent() {
     <div className="min-h-screen container mx-auto px-4 py-8 lg:py-12">
       {/* Header */}
       <motion.div
-        className="mb-8 flex items-center justify-between"
+        className="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">Job Giver Dashboard</h1>
-          <p className="text-slate-400">Manage your job postings and applicants</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-text-primary tracking-tight">Job Giver Dashboard</h1>
+          <p className="text-text-secondary text-lg">Manage your job postings and applicants</p>
         </div>
         <Button
           variant="primary"
           size="md"
-          glow
           onClick={() => setShowForm(true)}
         >
           <Plus className="mr-2" size={20} />
@@ -105,29 +104,29 @@ function JobGiverContent() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          className="mb-8"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-xl">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-green-400 text-sm">Connected:</span>
-            <span className="text-white font-mono text-sm">{address.slice(0, 10)}...{address.slice(-6)}</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 border border-success/20 rounded-xl">
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+            <span className="text-success text-sm font-medium">Connected:</span>
+            <span className="text-text-primary font-mono text-sm">{address.slice(0, 10)}...{address.slice(-6)}</span>
           </div>
         </motion.div>
       )}
 
       {/* Stats Grid */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+      <div className="grid md:grid-cols-3 gap-6 mb-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card glow className="p-6">
-            <div className="w-12 h-12 bg-aleo-purple/20 rounded-xl flex items-center justify-center mb-4">
-              <Briefcase className="text-aleo-purple-light" size={24} />
+          <Card className="p-6">
+            <div className="w-14 h-14 bg-accent-primary/10 rounded-xl flex items-center justify-center mb-5 border border-accent-primary/20">
+              <Briefcase className="text-accent-primary" size={24} />
             </div>
-            <p className="text-slate-400 text-sm mb-2">Active Jobs</p>
-            <p className="text-4xl font-bold text-white">{activeJobs}</p>
+            <p className="text-text-secondary text-sm mb-2 font-medium">Active Jobs</p>
+            <p className="text-4xl font-bold text-text-primary">{activeJobs}</p>
           </Card>
         </motion.div>
 
@@ -136,12 +135,12 @@ function JobGiverContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card glow className="p-6">
-            <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-4">
-              <TrendingUp className="text-cyan-400" size={24} />
+          <Card className="p-6">
+            <div className="w-14 h-14 bg-accent-secondary/10 rounded-xl flex items-center justify-center mb-5 border border-accent-secondary/20">
+              <TrendingUp className="text-accent-secondary" size={24} />
             </div>
-            <p className="text-slate-400 text-sm mb-2">Total Posted</p>
-            <p className="text-4xl font-bold text-white">{totalPosted}</p>
+            <p className="text-text-secondary text-sm mb-2 font-medium">Total Posted</p>
+            <p className="text-4xl font-bold text-text-primary">{totalPosted}</p>
           </Card>
         </motion.div>
 
@@ -150,35 +149,35 @@ function JobGiverContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card glow className="p-6">
-            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
-              <DollarSign className="text-emerald-400" size={24} />
+          <Card className="p-6">
+            <div className="w-14 h-14 bg-success/10 rounded-xl flex items-center justify-center mb-5 border border-success/20">
+              <DollarSign className="text-success" size={24} />
             </div>
-            <p className="text-slate-400 text-sm mb-2">Reputation</p>
-            <p className="text-4xl font-bold text-white">--</p>
+            <p className="text-text-secondary text-sm mb-2 font-medium">Reputation</p>
+            <p className="text-4xl font-bold text-text-primary">--</p>
           </Card>
         </motion.div>
       </div>
 
       {/* Jobs List */}
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold text-white mb-6">Your Jobs</h2>
+      <Card className="p-6 md:p-8">
+        <h2 className="text-2xl font-bold text-text-primary mb-8">Your Jobs</h2>
         {jobs.length > 0 ? (
           <div className="space-y-4">
             {jobs.map((job) => (
               <div
                 key={job.id}
-                className="bg-slate-700/50 rounded-xl p-6 border border-slate-600 hover:border-aleo-purple/50 transition-colors"
+                className="bg-bg-hover rounded-xl p-6 border border-border-subtle hover:border-border-accent transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-white mb-2">{job.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-slate-400">
-                      <span className="flex items-center gap-1">
+                    <h3 className="text-xl font-semibold text-text-primary mb-3">{job.title}</h3>
+                    <div className="flex items-center gap-6 text-sm text-text-secondary">
+                      <span className="flex items-center gap-2">
                         <Users size={16} />
                         {job.applicants} applicants
                       </span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-2">
                         <DollarSign size={16} />
                         {job.budget} credits
                       </span>
@@ -198,9 +197,10 @@ function JobGiverContent() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Briefcase className="mx-auto mb-4 text-slate-600" size={48} />
-            <p className="text-slate-400 mb-4">No jobs posted yet.</p>
+          <div className="text-center py-16">
+            <Briefcase className="mx-auto mb-6 text-text-muted" size={56} />
+            <p className="text-text-secondary mb-2 text-lg">No jobs posted yet.</p>
+            <p className="text-text-muted mb-6 text-sm">Get started by posting your first job opportunity.</p>
             <Button variant="primary" onClick={() => setShowForm(true)}>
               Post Your First Job
             </Button>
@@ -212,7 +212,7 @@ function JobGiverContent() {
       <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Post New Job">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-text-primary mb-2">
               Budget Min (Aleo Credits)
             </label>
             <input
@@ -221,13 +221,13 @@ function JobGiverContent() {
               min="1"
               value={formData.budgetMin}
               onChange={(e) => setFormData({ ...formData, budgetMin: e.target.value })}
-              className="w-full bg-slate-700 text-white px-4 py-3 rounded-xl border border-slate-600 focus:border-aleo-purple focus:outline-none"
+              className="w-full bg-bg-elevated text-text-primary px-4 py-3 rounded-xl border border-border-subtle focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary/20 transition-colors"
               placeholder="Minimum budget"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-text-primary mb-2">
               Budget Max (Aleo Credits)
             </label>
             <input
@@ -236,13 +236,13 @@ function JobGiverContent() {
               min={formData.budgetMin || 1}
               value={formData.budgetMax}
               onChange={(e) => setFormData({ ...formData, budgetMax: e.target.value })}
-              className="w-full bg-slate-700 text-white px-4 py-3 rounded-xl border border-slate-600 focus:border-aleo-purple focus:outline-none"
+              className="w-full bg-bg-elevated text-text-primary px-4 py-3 rounded-xl border border-border-subtle focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary/20 transition-colors"
               placeholder="Maximum budget"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-text-primary mb-2">
               Deadline (Days)
             </label>
             <input
@@ -251,24 +251,24 @@ function JobGiverContent() {
               min="1"
               value={formData.deadlineDays}
               onChange={(e) => setFormData({ ...formData, deadlineDays: e.target.value })}
-              className="w-full bg-slate-700 text-white px-4 py-3 rounded-xl border border-slate-600 focus:border-aleo-purple focus:outline-none"
+              className="w-full bg-bg-elevated text-text-primary px-4 py-3 rounded-xl border border-border-subtle focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary/20 transition-colors"
             />
           </div>
 
           {/* Wallet Info Display */}
-          <div className="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
+          <div className="bg-bg-elevated rounded-xl p-4 border border-border-subtle">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-slate-400">Posting from wallet</span>
-              <span className="text-xs text-green-400">✓ Connected</span>
+              <span className="text-sm text-text-secondary">Posting from wallet</span>
+              <span className="text-xs text-success font-medium">✓ Connected</span>
             </div>
-            <p className="text-white font-mono text-sm break-all">
+            <p className="text-text-primary font-mono text-sm break-all">
               {address}
             </p>
           </div>
 
-          <div className="bg-aleo-purple/10 border border-aleo-purple/30 rounded-xl p-4">
-            <p className="text-sm text-slate-300">
-              💡 <strong>Privacy Notice:</strong> Budget details are private. Only matched applicants will see them.
+          <div className="bg-accent-primary/5 border border-accent-primary/20 rounded-xl p-4">
+            <p className="text-sm text-text-secondary">
+              💡 <strong className="text-text-primary">Privacy Notice:</strong> Budget details are private. Only matched applicants will see them.
             </p>
           </div>
 
@@ -278,7 +278,6 @@ function JobGiverContent() {
             size="lg"
             className="w-full"
             disabled={loading}
-            glow
           >
             {loading ? 'Posting Job...' : 'Post Job'}
           </Button>

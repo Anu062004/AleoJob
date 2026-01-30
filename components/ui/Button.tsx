@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   glow?: boolean;
 }
@@ -16,12 +16,13 @@ export function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'font-semibold rounded-xl transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed relative overflow-hidden';
   
   const variants = {
-    primary: 'bg-gradient-to-r from-aleo-purple to-aleo-purple-light text-white hover:shadow-lg hover:shadow-aleo-purple/50',
-    secondary: 'bg-slate-700/50 text-white border border-slate-600 hover:bg-slate-700',
-    outline: 'border-2 border-aleo-purple text-aleo-purple hover:bg-aleo-purple/10',
+    primary: 'bg-accent-primary text-white hover:bg-accent-primary-hover shadow-lg shadow-accent-primary/20 hover:shadow-xl hover:shadow-accent-primary/30',
+    secondary: 'bg-bg-elevated text-text-primary border border-border-subtle hover:border-border-accent hover:bg-bg-hover',
+    outline: 'border-2 border-accent-primary text-accent-primary hover:bg-accent-primary/10 bg-transparent',
+    ghost: 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated',
   };
 
   const sizes = {
@@ -32,9 +33,10 @@ export function Button({
 
   return (
     <motion.button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${glow ? 'animate-glow' : ''} ${className}`}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${glow ? 'shadow-glow' : ''} ${className}`}
+      whileHover={{ scale: 1.01, y: -1 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ duration: 0.15 }}
       {...props}
     >
       {children}

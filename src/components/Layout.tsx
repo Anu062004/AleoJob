@@ -1,13 +1,11 @@
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
-import AnimatedBackground from './AnimatedBackground';
 
 function Layout() {
     return (
-        <div className="min-h-screen">
-            <AnimatedBackground />
+        <div className="min-h-screen bg-surface-main">
             <Header />
-            <main className="relative">
+            <main>
                 <Outlet />
             </main>
         </div>

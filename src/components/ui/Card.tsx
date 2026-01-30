@@ -1,27 +1,33 @@
 import { ReactNode } from 'react';
-import { motion } from 'framer-motion';
 
 interface CardProps {
     children: ReactNode;
     className?: string;
     hover?: boolean;
-    glow?: boolean;
+    padding?: 'none' | 'sm' | 'md' | 'lg';
 }
 
-export function Card({ children, className = '', hover = false, glow = false }: CardProps) {
-    const baseStyles = 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl';
-    const hoverStyles = hover ? 'hover:border-aleo-purple/50 hover:bg-slate-800/70 transition-all duration-300' : '';
-    const glowStyles = glow ? 'shadow-lg shadow-aleo-purple/10' : '';
+export function Card({
+    children,
+    className = '',
+    hover = false,
+    padding = 'md'
+}: CardProps) {
+    const baseStyles = 'bg-surface-card border border-border-subtle rounded-2xl shadow-card';
+    const hoverStyles = hover
+        ? 'transition-all duration-200 hover:bg-surface-hover hover:border-border-accent hover:shadow-card-hover hover:-translate-y-0.5'
+        : '';
+
+    const paddingStyles = {
+        none: '',
+        sm: 'p-4',
+        md: 'p-6',
+        lg: 'p-8',
+    };
 
     return (
-        <motion.div
-            className={`${baseStyles} ${hoverStyles} ${glowStyles} ${className}`}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3 }}
-        >
+        <div className={`${baseStyles} ${hoverStyles} ${paddingStyles[padding]} ${className}`}>
             {children}
-        </motion.div>
+        </div>
     );
 }
