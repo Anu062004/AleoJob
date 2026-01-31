@@ -66,13 +66,20 @@ setupRoutes().then(() => {
 
   // Handle React Router - redirect all unknown routes to index.html
   // This must be AFTER API routes
-  app.get('*all', (req, res) => {
+  // Use app.use for catch-all in Express 5 (compatible with Express 5.x)
+  app.use((req, res, next) => {
     // If it's an API call that wasn't caught, return 404
     if (req.path.startsWith('/api/')) {
       return res.status(404).json({ success: false, message: 'API route not found' });
     }
-    // Otherwise serve index.html
-    res.sendFile(join(distPath, 'index.html'));
+    // Otherwise serve index.html for all other routes (SPA fallback)
+    const indexPath = join(distPath, 'index.html');
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error('Error sending index.html:', err);
+        res.status(500).send('Internal Server Error');
+      }
+    });
   });
   // -----------------------
 
