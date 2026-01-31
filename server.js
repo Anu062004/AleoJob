@@ -66,7 +66,7 @@ setupRoutes().then(() => {
 
   // Handle React Router - redirect all unknown routes to index.html
   // This must be AFTER API routes
-  app.get('*', (req, res) => {
+  app.get('*all', (req, res) => {
     // If it's an API call that wasn't caught, return 404
     if (req.path.startsWith('/api/')) {
       return res.status(404).json({ success: false, message: 'API route not found' });
