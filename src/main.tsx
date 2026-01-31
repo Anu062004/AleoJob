@@ -45,9 +45,30 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
+// Check for critical environment variables
+const missingEnvVars: string[] = [];
+if (!import.meta.env.NEXT_PUBLIC_SUPABASE_URL) {
+  missingEnvVars.push('NEXT_PUBLIC_SUPABASE_URL');
+}
+if (!import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  missingEnvVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+}
+
+if (missingEnvVars.length > 0) {
+  console.error('⚠️ Missing environment variables:', missingEnvVars.join(', '));
+  console.error('Please set these in Vercel project settings > Environment Variables');
+}
+
 // Add error handler for unhandled errors
 window.addEventListener('error', (event) => {
   console.error('Unhandled error:', event.error);
+  console.error('Error details:', {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    error: event.error
+  });
 });
 
 window.addEventListener('unhandledrejection', (event) => {

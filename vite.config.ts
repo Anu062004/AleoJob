@@ -6,6 +6,7 @@ import path from 'path';
 export default defineConfig({
     plugins: [react()],
     envPrefix: 'NEXT_PUBLIC_',
+    base: '/', // Ensure base path is correct for Vercel
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
