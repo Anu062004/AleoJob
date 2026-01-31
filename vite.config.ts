@@ -30,16 +30,34 @@ export default defineConfig({
     build: {
         outDir: 'dist',
         sourcemap: false, // Disable sourcemaps in production for smaller builds
+        target: 'esnext', // Support modern JS features including top-level await
         rollupOptions: {
             output: {
-                manualChunks: {
-                    'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-                    'aleo-vendor': ['@provablehq/sdk', '@provablehq/aleo-wallet-adaptor-react'],
+                manualChunks: (id) => {
+                    // Exclude @provablehq/sdk from chunking to avoid top-level await issues
+                    // It will be bundled inline or as a separate ES module
+                    if (id.includes('@provablehq/sdk')) {
+                        return undefined; // Don't create a manual chunk for this
+                    }
+                    if (id.includes('node_modules')) {
+                        if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+                            return 'react-vendor';
+                        }
+                        if (id.includes('@provablehq/aleo-wallet-adaptor')) {
+                            return 'aleo-wallet';
+                        }
+                        return 'vendor';
+                    }
                 },
+                // Ensure all chunks use ES module format to support top-level await
+                format: 'es',
             },
         },
     },
     optimizeDeps: {
         exclude: ['@provablehq/sdk'],
+        esbuildOptions: {
+            target: 'esnext',
+        },
     },
 });
