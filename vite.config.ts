@@ -14,6 +14,18 @@ export default defineConfig({
     server: {
         port: 3000,
         open: true,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3001',
+                changeOrigin: true,
+                secure: false,
+                // Don't rewrite the path - proxy as-is
+            },
+        },
+        // Exclude app directory from Vite's module resolution
+        fs: {
+            strict: false,
+        },
     },
     build: {
         outDir: 'dist',

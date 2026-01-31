@@ -53,3 +53,6 @@ export function createSupabaseClientWithToken(aleoAddress: string) {
 export type { SupabaseClient } from '@supabase/supabase-js';
 
 
+
+
+

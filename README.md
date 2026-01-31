@@ -118,26 +118,26 @@ Before you begin, ensure you have:
 ### Installation Steps
 
 1. **Clone the repository**
-   ```bash
+```bash
    git clone https://github.com/Anu062004/AleoJob.git
    cd AleoJob
    ```
 
 2. **Install dependencies**
    ```bash
-   npm install
+npm install
    ```
 
 3. **Set up environment variables**
    ```bash
-   cp .env.example .env.local
+cp .env.example .env.local
    ```
    Then edit `.env.local` with your configuration (see [Environment Variables](#-environment-variables) section below)
 
 4. **Start the development server**
    ```bash
-   npm run dev
-   ```
+npm run dev
+```
 
 5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)

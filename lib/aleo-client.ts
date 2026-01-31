@@ -159,6 +159,85 @@ class AleoClient {
     );
     return response.json();
   }
+
+  // ============================================
+  // ESCROW METHODS
+  // ============================================
+
+  // Create escrow
+  async createEscrow(
+    jobId: string,
+    employerPrivateKey: string,
+    freelancerAddress: string,
+    amount: number,
+    aleoAddress: string
+  ): Promise<TransactionResponse> {
+    const response = await fetch(`${this.apiBase}/escrow/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jobId,
+        employerPrivateKey,
+        freelancerAddress,
+        amount,
+        aleoAddress,
+      }),
+    });
+    return response.json();
+  }
+
+  // Release escrow
+  async releaseEscrow(
+    escrowId: string,
+    employerPrivateKey: string,
+    aleoAddress: string
+  ): Promise<TransactionResponse> {
+    const response = await fetch(`${this.apiBase}/escrow/release`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        escrowId,
+        employerPrivateKey,
+        aleoAddress,
+      }),
+    });
+    return response.json();
+  }
+
+  // Refund escrow
+  async refundEscrow(
+    escrowId: string,
+    employerPrivateKey: string,
+    aleoAddress: string,
+    refundReason: number = 0
+  ): Promise<TransactionResponse> {
+    const response = await fetch(`${this.apiBase}/escrow/refund`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        escrowId,
+        employerPrivateKey,
+        aleoAddress,
+        refundReason,
+      }),
+    });
+    return response.json();
+  }
+
+  // Get escrow status
+  async getEscrowStatus(escrowId?: string, jobId?: string) {
+    const params = new URLSearchParams();
+    if (escrowId) params.append('escrowId', escrowId);
+    if (jobId) params.append('jobId', jobId);
+    const response = await fetch(`${this.apiBase}/escrow/status?${params}`);
+    return response.json();
+  }
 }
 
 // Export singleton instance

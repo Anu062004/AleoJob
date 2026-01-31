@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
-import { Users, FileText, DollarSign, X, Loader2, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, FileText, DollarSign, X, Loader2, Plus, ChevronDown, ChevronUp, Lock, Unlock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { transferCredits } from '../lib/credit-transfer';
 import { createSupabaseClientWithToken } from '@/lib/supabaseClient';
+import { EscrowStatusBadge } from '@/components/escrow/EscrowStatusBadge';
+import { EscrowActionPanel } from '@/components/escrow/EscrowActionPanel';
 
 interface Application {
     id: string;
@@ -20,6 +22,15 @@ interface Application {
     };
 }
 
+interface Escrow {
+    id: string;
+    status: 'locked' | 'released' | 'refunded';
+    amount: number;
+    create_tx?: string;
+    release_tx?: string;
+    refund_tx?: string;
+}
+
 interface Job {
     id: string;
     title: string;
@@ -28,7 +39,9 @@ interface Job {
     budget: string;
     is_active: boolean;
     created_at: string;
+    payment_status?: 'pending' | 'locked' | 'completed' | 'refunded';
     applications?: Application[];
+    escrows?: Escrow[];
 }
 
 function Giver() {
@@ -65,26 +78,222 @@ function Giver() {
     const updateApplicationStatus = async (applicationId: string, newStatus: 'accepted' | 'rejected') => {
         if (!address) return;
 
+        // For rejected, use old method
+        if (newStatus === 'rejected') {
+            try {
+                const client = createSupabaseClientWithToken(address);
+                const { error } = await client
+                    .from('applications')
+                    .update({ status: newStatus })
+                    .eq('id', applicationId);
+
+                if (error) throw error;
+
+                setJobs(prevJobs => prevJobs.map(job => ({
+                    ...job,
+                    applications: job.applications?.map(app =>
+                        app.id === applicationId ? { ...app, status: newStatus } : app
+                    )
+                })));
+
+                alert(`Application ${newStatus}`);
+            } catch (error: any) {
+                console.error('Failed to update application:', error);
+                alert(`Failed to update: ${error.message}`);
+            }
+            return;
+        }
+
+        // For accepted, use new API route that creates escrow
         try {
-            const client = createSupabaseClientWithToken(address);
-            const { error } = await client
-                .from('applications')
-                .update({ status: newStatus })
-                .eq('id', applicationId);
+            // Prompt for private key (temporary - in production, use wallet signing)
+            const privateKey = prompt(
+                'Enter your Aleo private key to create escrow:\n\n' +
+                '⚠️ This is temporary. In production, this will use wallet signing.'
+            );
 
-            if (error) throw error;
+            if (!privateKey) {
+                alert('Private key required to create escrow');
+                return;
+            }
 
-            setJobs(prevJobs => prevJobs.map(job => ({
-                ...job,
-                applications: job.applications?.map(app =>
-                    app.id === applicationId ? { ...app, status: newStatus } : app
-                )
-            })));
+            // Find the job and application to get amount
+            const jobWithApp = jobs.find(job => 
+                job.applications?.some(app => app.id === applicationId)
+            );
+            const application = jobWithApp?.applications?.find(app => app.id === applicationId);
 
-            alert(`Application ${newStatus}`);
+            if (!jobWithApp || !application) {
+                alert('Job or application not found');
+                return;
+            }
+
+            // Parse amount from budget (e.g., "100-200 credits" -> 150)
+            let amount: number | undefined;
+            if (jobWithApp.budget) {
+                const numbers = jobWithApp.budget.match(/\d+/g);
+                if (numbers && numbers.length > 0) {
+                    // Use average if range, or first number if single
+                    if (numbers.length >= 2) {
+                        amount = (parseInt(numbers[0]) + parseInt(numbers[1])) / 2;
+                    } else {
+                        amount = parseInt(numbers[0]);
+                    }
+                }
+            }
+
+            if (!amount) {
+                const amountInput = prompt('Enter payment amount (credits):');
+                if (!amountInput) {
+                    alert('Amount required to create escrow');
+                    return;
+                }
+                amount = parseFloat(amountInput);
+            }
+
+            // Call the new API route
+            console.log('[Frontend] Accepting application and creating escrow:', {
+                applicationId,
+                amount,
+                aleoAddress: address?.substring(0, 20) + '...',
+            });
+
+            let response: Response;
+            try {
+                response = await fetch('/api/jobs/accept', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        applicationId,
+                        employerPrivateKey: privateKey,
+                        aleoAddress: address,
+                        amount,
+                    }),
+                });
+            } catch (fetchError: any) {
+                // Network error (server not running, CORS, etc.)
+                const networkError = fetchError?.message || fetchError?.toString() || 'Network error: Could not connect to server';
+                console.error('[Frontend] Network error:', networkError);
+                throw new Error(`Network error: ${networkError}. Make sure the backend server is running on port 3001.`);
+            }
+
+            // Read response body only once
+            let data: any;
+            const contentType = response.headers.get('content-type');
+            
+            try {
+                if (contentType && contentType.includes('application/json')) {
+                    // Response is JSON
+                    data = await response.json();
+                } else {
+                    // Response is not JSON, read as text
+                    const text = await response.text();
+                    console.error('[Frontend] Non-JSON response:', text);
+                    throw new Error(`Server error: ${response.status} ${response.statusText}. ${text || ''}`);
+                }
+            } catch (parseError: any) {
+                // JSON parsing error
+                console.error('[Frontend] Failed to parse response:', parseError);
+                throw new Error(`Failed to parse server response: ${parseError?.message || 'Invalid JSON'}`);
+            }
+
+            // Check if response is OK
+            if (!response.ok) {
+                // Backend returns 'message' field, not 'error'
+                let errorMessage = data?.message || data?.error;
+                
+                // If no message in data, try to extract from data itself
+                if (!errorMessage && data) {
+                    if (typeof data === 'string') {
+                        errorMessage = data;
+                    } else if (typeof data === 'object') {
+                        errorMessage = JSON.stringify(data);
+                    }
+                }
+                
+                // Fallback to status text
+                if (!errorMessage) {
+                    errorMessage = `Server error: ${response.status} ${response.statusText}`;
+                }
+                
+                console.error('[Frontend] API error response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorMessage,
+                    data,
+                });
+                throw new Error(errorMessage);
+            }
+
+            // Check success flag
+            if (!data || !data.success) {
+                // Backend returns 'message' field, not 'error'
+                let errorMessage = data?.message || data?.error;
+                
+                // If no message, try to extract from data
+                if (!errorMessage && data) {
+                    if (typeof data === 'string') {
+                        errorMessage = data;
+                    } else if (typeof data === 'object') {
+                        errorMessage = JSON.stringify(data);
+                    }
+                }
+                
+                // Fallback
+                if (!errorMessage) {
+                    errorMessage = 'Failed to accept application';
+                }
+                
+                console.error('[Frontend] API returned success=false:', data);
+                throw new Error(errorMessage);
+            }
+
+            console.log('[Frontend] Application accepted successfully:', {
+                applicationId: data.application?.id,
+                escrowId: data.escrow?.id,
+                transactionId: data.escrow?.transactionId,
+            });
+
+            // Refresh jobs to get updated escrow info
+            await fetchJobs();
+
+            alert(
+                `✅ Application accepted!\n\n` +
+                `Escrow created: ${data.escrow?.id || 'N/A'}\n` +
+                `Transaction: ${data.escrow?.transactionId || 'N/A'}`
+            );
         } catch (error: any) {
-            console.error('Failed to update application:', error);
-            alert(`Failed to update: ${error.message}`);
+            // Extract error message from various error formats
+            let errorMessage = 'Unknown error occurred';
+            
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            } else if (error && typeof error === 'object') {
+                // Try various properties that might contain the error message
+                errorMessage = error.message || error.error || error.msg || error.toString();
+            }
+            
+            // If still no message, try to stringify the error
+            if (!errorMessage || errorMessage === '[object Object]' || errorMessage === 'Object') {
+                try {
+                    errorMessage = JSON.stringify(error);
+                } catch {
+                    errorMessage = String(error);
+                }
+            }
+            
+            console.error('[Frontend] Failed to accept application:', {
+                error: errorMessage,
+                originalError: error,
+                stack: error?.stack,
+                name: error?.name,
+            });
+            
+            alert(`❌ Failed to accept application: ${errorMessage}`);
         }
     };
 
@@ -139,6 +348,14 @@ function Giver() {
                                 skills,
                                 profile_score
                             )
+                        ),
+                        escrows (
+                            id,
+                            status,
+                            amount,
+                            create_tx,
+                            release_tx,
+                            refund_tx
                         )
                     `)
                     .eq('giver_id', user.id)
@@ -391,9 +608,16 @@ function Giver() {
                                     required
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-surface-elevated text-text-primary px-4 py-2.5 rounded-xl border border-border-subtle focus:border-border-accent focus:outline-none transition-colors"
+                                    className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                     placeholder="e.g. Frontend Developer"
                                     disabled={isProcessing}
+                                    style={{ 
+                                        backgroundColor: '#1A1A24',
+                                        color: '#F8FAFC',
+                                        borderColor: 'rgba(255, 255, 255, 0.08)'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.3)'}
+                                    onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
                                 />
                             </div>
 
@@ -404,9 +628,16 @@ function Giver() {
                                     rows={4}
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-surface-elevated text-text-primary px-4 py-2.5 rounded-xl border border-border-subtle focus:border-border-accent focus:outline-none resize-none transition-colors"
+                                    className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none resize-none"
                                     placeholder="Describe the job requirements..."
                                     disabled={isProcessing}
+                                    style={{ 
+                                        backgroundColor: '#1A1A24',
+                                        color: '#F8FAFC',
+                                        borderColor: 'rgba(255, 255, 255, 0.08)'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.3)'}
+                                    onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
                                 />
                             </div>
 
@@ -416,9 +647,16 @@ function Giver() {
                                     type="text"
                                     value={formData.skills}
                                     onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                                    className="w-full bg-surface-elevated text-text-primary px-4 py-2.5 rounded-xl border border-border-subtle focus:border-border-accent focus:outline-none transition-colors"
+                                    className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                     placeholder="React, TypeScript, Leo"
                                     disabled={isProcessing}
+                                    style={{ 
+                                        backgroundColor: '#1A1A24',
+                                        color: '#F8FAFC',
+                                        borderColor: 'rgba(255, 255, 255, 0.08)'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.3)'}
+                                    onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
                                 />
                             </div>
 
@@ -431,8 +669,15 @@ function Giver() {
                                         min="1"
                                         value={formData.budgetMin}
                                         onChange={(e) => setFormData({ ...formData, budgetMin: e.target.value })}
-                                        className="w-full bg-surface-elevated text-text-primary px-4 py-2.5 rounded-xl border border-border-subtle focus:border-border-accent focus:outline-none transition-colors"
+                                        className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                         disabled={isProcessing}
+                                        style={{ 
+                                            backgroundColor: '#1A1A24',
+                                            color: '#F8FAFC',
+                                            borderColor: 'rgba(255, 255, 255, 0.08)'
+                                        }}
+                                        onFocus={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.3)'}
+                                        onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
                                     />
                                 </div>
                                 <div>
@@ -443,8 +688,15 @@ function Giver() {
                                         min={formData.budgetMin || 1}
                                         value={formData.budgetMax}
                                         onChange={(e) => setFormData({ ...formData, budgetMax: e.target.value })}
-                                        className="w-full bg-surface-elevated text-text-primary px-4 py-2.5 rounded-xl border border-border-subtle focus:border-border-accent focus:outline-none transition-colors"
+                                        className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                         disabled={isProcessing}
+                                        style={{ 
+                                            backgroundColor: '#1A1A24',
+                                            color: '#F8FAFC',
+                                            borderColor: 'rgba(255, 255, 255, 0.08)'
+                                        }}
+                                        onFocus={(e) => e.target.style.borderColor = 'rgba(99, 102, 241, 0.3)'}
+                                        onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
                                     />
                                 </div>
                             </div>
@@ -514,6 +766,31 @@ function Giver() {
                                                 <span>{new Date(job.created_at).toLocaleDateString()}</span>
                                                 <span>{job.applications?.length || 0} applicants</span>
                                             </div>
+
+                                            {/* Escrow Status */}
+                                            {job.escrows && job.escrows.length > 0 && (
+                                                <div className="mt-3 pt-3 border-t border-border-subtle">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs text-text-muted">Escrow:</span>
+                                                        <EscrowStatusBadge status={job.escrows[0].status} />
+                                                        <span className="text-xs text-text-muted">
+                                                            {job.escrows[0].amount} credits
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {job.payment_status && (
+                                                <div className="mt-2">
+                                                    <Badge variant={
+                                                        job.payment_status === 'locked' ? 'warning' :
+                                                        job.payment_status === 'completed' ? 'success' :
+                                                        job.payment_status === 'refunded' ? 'destructive' : 'default'
+                                                    }>
+                                                        Payment: {job.payment_status}
+                                                    </Badge>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col items-end gap-2">
@@ -600,6 +877,25 @@ function Giver() {
                                                 </div>
                                             ))}
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Escrow Action Panel for Accepted Jobs */}
+                                {job.escrows && job.escrows.length > 0 && job.escrows[0].status === 'locked' && (
+                                    <div className="border-t border-border-subtle p-5 bg-surface-elevated/50">
+                                        <h4 className="text-sm font-medium text-text-primary mb-3">
+                                            Payment Escrow
+                                        </h4>
+                                        <EscrowActionPanel
+                                            escrowId={job.escrows[0].id}
+                                            status={job.escrows[0].status}
+                                            employerPrivateKey={''} // Will prompt when needed
+                                            aleoAddress={address || ''}
+                                            onStatusChange={async (newStatus) => {
+                                                // Refresh jobs to get updated escrow status
+                                                await fetchJobs();
+                                            }}
+                                        />
                                     </div>
                                 )}
                             </Card>

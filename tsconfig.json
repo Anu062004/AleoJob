@@ -32,6 +32,11 @@
   "include": [
     "src"
   ],
+  "exclude": [
+    "app",
+    "backend",
+    "node_modules"
+  ],
   "references": [
     {
       "path": "./tsconfig.node.json"

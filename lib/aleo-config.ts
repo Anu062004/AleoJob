@@ -9,12 +9,14 @@ export const ALEO_CONFIG = {
   rpcEndpoints: (
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_RPC_ENDPOINTS) ||
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_ENDPOINTS) ||
+    (typeof process !== 'undefined' && process.env?.ALEO_ENDPOINT) ||
+    (typeof process !== 'undefined' && process.env?.ENDPOINT) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_RPC_ENDPOINTS) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_ENDPOINTS) ||
-    'https://api.explorer.provable.com/v2/testnet,http://localhost:3033'
+    'https://api.explorer.aleo.org/v1/testnet,https://api.explorer.provable.com/v1/testnet'
   )
     .split(',')
-    .map((s) => s.trim())
+    .map((s: any) => s.trim())
     .filter(Boolean),
 
   // Explorer/query endpoints (used for reads like balances/records; ordered by preference)
@@ -23,7 +25,7 @@ export const ALEO_CONFIG = {
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_QUERY_ENDPOINT) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_QUERY_ENDPOINTS) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_QUERY_ENDPOINT) ||
-    'https://api.explorer.provable.com/v1/testnet'
+    'https://api.explorer.aleo.org/v1/testnet'
   )
     .split(',')
     .map((s) => s.trim())
@@ -32,11 +34,11 @@ export const ALEO_CONFIG = {
   // Back-compat single fields (some older code may still reference these)
   endpoint: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_ENDPOINT) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_ENDPOINT) ||
-    'https://api.explorer.provable.com/v2/testnet',
+    'https://api.explorer.aleo.org/v1/testnet',
   queryEndpoint: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_QUERY_ENDPOINT) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_QUERY_ENDPOINT) ||
-    'https://api.explorer.provable.com/v1/testnet',
-  
+    'https://api.explorer.aleo.org/v1/testnet',
+
   // Program IDs (deployed to testnet)
   programs: {
     accessControl: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ACCESS_CONTROL_PROGRAM_ID) ||
@@ -52,7 +54,7 @@ export const ALEO_CONFIG = {
       (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ESCROW_PROGRAM_ID) ||
       'job_marketplace_escrow_engine.aleo',
   },
-  
+
   // Deployment transaction IDs (for reference - deployed on testnet)
   deploymentTxIds: {
     accessControl: 'at1gle07ajny33jlew26rf3thz0z4msux047y6p4qpt72j995fcevgqhx8dyp',

@@ -16,6 +16,10 @@ const config: Config = {
         'bg-secondary': '#111118',
         'bg-elevated': '#1A1A24',
         'bg-hover': '#242430',
+        // Surface colors for inputs
+        'surface-elevated': '#1A1A24',
+        'surface-main': '#0A0A0F',
+        'surface-card': '#1A1A24',
         // Accent colors - elegant indigo/cyan
         'accent-primary': '#6366F1',
         'accent-primary-hover': '#818CF8',

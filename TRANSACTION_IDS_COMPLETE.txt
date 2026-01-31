@@ -1,0 +1,23 @@
+# ✅ All Deployment Transaction IDs - Copy & Paste Ready
+
+# ============================================
+# Deployment Transaction IDs for .env.local
+# ============================================
+
+# Access Control - Block 13,925,577
+ACCESS_CONTROL_DEPLOY_TX_ID=at1gle07ajny33jlew26rf3thz0z4msux047y6p4qpt72j995fcevgqhx8dyp
+
+# Job Registry - Block 13,925,614
+JOB_REGISTRY_DEPLOY_TX_ID=at14g4cs6suhz5c7m3yuhlpxfn82tk70vuushtusw5xcnrh6lgyrvqq4klrgm
+
+# Reputation - Block 13,925,593
+REPUTATION_DEPLOY_TX_ID=at16jhed2qd4yjfue4zjlxyt0ljvnrrkg488fnzmp9dlp6pt9jvnqqqsh64f5
+
+# Escrow - Block 13,925,818
+ESCROW_DEPLOY_TX_ID=at1nx028nv4acplcck5ure03y49ezlmwvthsjktsk0nk0kvmkz245xqjhxpac
+
+# ============================================
+# All transaction IDs have been added to .env.local
+# ============================================
+
+

@@ -1,0 +1,30 @@
+# Copy and paste these into your .env.local file:
+
+# ============================================
+# Deployment Transaction IDs
+# ============================================
+
+# Access Control - Block 13,925,577
+ACCESS_CONTROL_DEPLOY_TX_ID=at1[FIND_ON_EXPLORER]
+
+# Job Registry - Block 13,925,614  
+JOB_REGISTRY_DEPLOY_TX_ID=at14g4cs6suhz5c7m3yuhlpxfn82tk70vuushtusw5xcnrh6lgyrvqq4klrgm
+
+# Reputation - Block 13,925,593
+REPUTATION_DEPLOY_TX_ID=at1[FIND_ON_EXPLORER]
+
+# Escrow - Block 13,925,818
+ESCROW_DEPLOY_TX_ID=at1[FIND_ON_EXPLORER]
+
+# ============================================
+# Instructions to find missing transaction IDs:
+# ============================================
+# 1. Visit: https://explorer.aleo.org
+# 2. Search for each program:
+#    - access_control.aleo (Block 13,925,577)
+#    - reputation.aleo (Block 13,925,593)
+#    - job_marketplace_escrow_engine.aleo (Block 13,925,818)
+# 3. On the program details page, look for the deployment transaction ID
+# 4. It will be in the format: at1[long_string]
+
+
