@@ -16,7 +16,7 @@ export default defineConfig({
         open: true,
         proxy: {
             '/api': {
-                target: 'http://localhost:3001',
+                target: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001',
                 changeOrigin: true,
                 secure: false,
                 // Don't rewrite the path - proxy as-is
@@ -29,7 +29,15 @@ export default defineConfig({
     },
     build: {
         outDir: 'dist',
-        sourcemap: true,
+        sourcemap: false, // Disable sourcemaps in production for smaller builds
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+                    'aleo-vendor': ['@provablehq/sdk', '@provablehq/aleo-wallet-adaptor-react'],
+                },
+            },
+        },
     },
     optimizeDeps: {
         exclude: ['@provablehq/sdk'],
