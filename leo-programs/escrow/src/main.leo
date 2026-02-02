@@ -70,10 +70,5 @@ program job_marketplace_escrow_engine.aleo {
     ) -> u8 {
         return status;
     }
-
-    @noupgrade
-    async constructor() {
-        // The Leo compiler automatically generates the constructor logic.
-    }
 }
 

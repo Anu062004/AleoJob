@@ -22,7 +22,14 @@ export const ALEO_CONFIG = {
 
     const endpoints = raw.split(',')
       .map((s: any) => s.trim())
-      .map((s: string) => s.replace(/\/testnet\/?$/, '')) // More aggressive normalization
+      .map((s: string) => {
+        // Only strip /testnet (not testnet3) and /v1 if they're at the end
+        // Preserve testnet3, testnetbeta, etc.
+        return s
+          .replace(/\/testnet(?!3|beta)\/?$/, '')  // Remove /testnet but keep /testnet3 or /testnetbeta
+          .replace(/\/v1\/?$/, '')
+          .replace(/\/+$/, '');
+      })
       .filter(Boolean);
 
     console.log('🔍 [Aleo Config] RPC Endpoints:', endpoints);

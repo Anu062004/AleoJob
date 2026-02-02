@@ -4,7 +4,7 @@
 # Usage: bash deploy-manual.sh <contract_name>
 
 export PRIVATE_KEY='APrivateKey1zkp8xH3uujgA4phUNeeRZfk31JzYuJkTUZbbvPjs2rijjYV'
-export ENDPOINT='https://api.explorer.provable.com/v2/testnet'
+export ENDPOINT='https://api.provable.com/v2/testnet'
 export NETWORK='testnet'
 
 BASE_DIR="/mnt/c/Users/ankur/OneDrive/Desktop/AleoAleo/leo-programs"
@@ -20,21 +20,27 @@ fi
 
 PROGRAM_DIR="$BASE_DIR/$CONTRACT"
 
-echo "Deploying $CONTRACT..."
+echo "🔨 Building $CONTRACT..."
 cd "$PROGRAM_DIR" || exit 1
 
-# Try deployment with various flags
+# Build the program first
+$LEO_BIN build
+
+echo ""
+echo "✅ Build complete!"
+echo ""
+echo "🚀 Deploying $CONTRACT to testnet..."
+
+# Deploy with updated endpoint
 $LEO_BIN deploy \
     --network "$NETWORK" \
     --endpoint "$ENDPOINT" \
-    --consensus-version 11 \
-    --broadcast \
+    --private-key "$PRIVATE_KEY" \
     --priority-fee 0 \
     --yes
 
-
-
-
+echo ""
+echo "✅ Deployment complete!"
 
 
 

@@ -13,7 +13,6 @@ export default defineConfig({
         },
     },
     define: {
-        // Resolve 'global' is not defined issues in some SDKs
         'global': 'window',
     },
     server: {
@@ -21,24 +20,16 @@ export default defineConfig({
         open: true,
         proxy: {
             '/api': {
-                target: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001',
+                target: 'http://localhost:3001',
                 changeOrigin: true,
                 secure: false,
             },
-        },
-        fs: {
-            strict: false,
         },
     },
     build: {
         outDir: 'dist',
         sourcemap: false,
         target: 'esnext',
-        rollupOptions: {
-            output: {
-                format: 'es',
-            },
-        },
     },
     optimizeDeps: {
         exclude: ['@provablehq/sdk'],

@@ -1,28 +1,30 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": null,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
+    "version": 2,
+    "builds": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
         }
-      ]
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "https://aleojob.onrender.com/api/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/$1"
+        }
+    ],
+    "env": {
+        "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
+        "NEXT_PUBLIC_BACKEND_URL": "https://aleojob.onrender.com",
+        "NEXT_PUBLIC_ALEO_NETWORK": "testnet",
+        "NEXT_PUBLIC_ALEO_ENDPOINT": "https://api.provable.com/v2/testnet",
+        "NEXT_PUBLIC_ALEO_RPC_URL": "https://api.provable.com/v2/testnet"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
 }
-

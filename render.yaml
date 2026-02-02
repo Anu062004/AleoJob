@@ -1,0 +1,32 @@
+# Render deployment configuration
+# This file tells Render how to build and run your backend
+
+services:
+  - type: web
+    name: aleojob-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ALEO_NETWORK
+        value: testnet
+      - key: NEXT_PUBLIC_ALEO_NETWORK
+        value: testnet
+      - key: NEXT_PUBLIC_ALEO_ENDPOINT
+        value: https://api.provable.com/v2/testnet
+      - key: NEXT_PUBLIC_ALEO_RPC_URL
+        value: https://api.provable.com/v2/testnet
+      - key: ALEO_RPC_ENDPOINTS
+        value: https://api.provable.com/v2/testnet,https://testnetbeta.aleorpc.com

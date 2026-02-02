@@ -2,7 +2,7 @@
 // Handles all Aleo blockchain interactions
 
 import { ALEO_CONFIG, ALEO_CREDITS } from './aleo-config';
-import { AleoNetworkClient } from '@provablehq/sdk/testnet.js';
+import { AleoNetworkClient, ProgramManager, Account } from '@provablehq/sdk/testnet.js';
 import axios from 'axios';
 
 // Types
@@ -37,6 +37,13 @@ class AleoService {
     this.queryEndpoints =
       (ALEO_CONFIG as any).queryEndpoints?.length ? (ALEO_CONFIG as any).queryEndpoints : [(ALEO_CONFIG as any).queryEndpoint ?? ALEO_CONFIG.endpoint];
     this.network = ALEO_CONFIG.network;
+
+    console.info('🚀 [Aleo Service] Initialized with:', {
+      network: this.network,
+      rpcCount: this.rpcEndpoints.length,
+      rpcFirst: this.rpcEndpoints[0],
+      queryFirst: this.queryEndpoints[0]
+    });
   }
 
   // Lazily create a Provable AleoNetworkClient with endpoint failover
@@ -46,9 +53,14 @@ class AleoService {
     let lastErr: any = null;
     for (const endpoint of this.rpcEndpoints) {
       try {
-        // Strip trailing /testnet or / if present
-        const normalizedEndpoint = endpoint.replace(/\/testnet\/?$/, '').replace(/\/+$/, '');
-        console.log(`📡 [Aleo Service] Connecting to: ${normalizedEndpoint} (Original: ${endpoint})`);
+        // Strip trailing /testnet (but preserve testnetbeta), /v1, or / if present
+        // The SDK behavior varies - some versions append network, some don't
+        const normalizedEndpoint = endpoint
+          .replace(/\/testnet(?!beta)\/?$/, '')  // Remove /testnet but keep testnetbeta
+          .replace(/\/v1\/?$/, '')
+          .replace(/\/+$/, '');
+
+        console.log(`📡 [Aleo Service] Attempting AleoNetworkClient with: ${normalizedEndpoint} (Original: ${endpoint})`);
 
         const client = new AleoNetworkClient(normalizedEndpoint);
         // Health check; method name from Provable SDK docs
@@ -62,7 +74,19 @@ class AleoService {
       }
     }
 
-    throw lastErr ?? new Error('All Aleo endpoints unavailable');
+    // If all custom endpoints failed, try using SDK's default (no endpoint specified)
+    console.warn('⚠️ [Aleo Service] All custom endpoints failed. Trying SDK default...');
+    try {
+      // Use Provable API v2 as the final fallback
+      const defaultClient = new AleoNetworkClient('https://api.provable.com/v2/testnet');
+      await defaultClient.getLatestBlock();
+      console.log('✅ [Aleo Service] Connected using Provable API v2 fallback');
+      this.client = defaultClient;
+      return defaultClient;
+    } catch (e: any) {
+      console.error('❌ [Aleo Service] All endpoints failed including Provable v2:', e?.message);
+      throw lastErr ?? new Error('All Aleo endpoints unavailable, including SDK default');
+    }
   }
 
   /**
@@ -134,24 +158,53 @@ class AleoService {
         throw new Error('Aleo client not initialized - getClient returned null');
       }
 
-      // Provable SDK handles serialization and submission internally.
-      console.log('[Aleo Service] Calling executeProgram with:', {
-        programId,
-        functionName,
-        inputsLength: inputs.length,
-      });
+      // Use ProgramManager for executing transitions
+      console.log('[Aleo Service] Creating ProgramManager and executing transition...');
 
       let txId: any;
       try {
-        txId = await (client as any).executeProgram(
-          programId,
-          functionName,
-          inputs,
-          privateKey,
-          fee ?? 0
+        // Create account from private key
+        const account = new Account({ privateKey });
+
+        // Create ProgramManager with the network client
+        // IMPORTANT: ProgramManager appends /testnet automatically, so we need to strip it from the host
+        const baseHost = client.host.replace(/\/testnet\/?$/, '').replace(/\/+$/, '');
+        console.log('[Aleo Service] Creating ProgramManager with base host:', baseHost);
+
+        const programManager = new ProgramManager(
+          baseHost,    // Base URL without /testnet
+          undefined,   // keyProvider (optional)
+          undefined    // recordProvider (optional)
         );
+
+        // Set the account
+        programManager.setAccount(account);
+
+        // Execute the transition with options object
+        console.log('[Aleo Service] Executing with ProgramManager:', {
+          programName: programId,
+          functionName,
+          inputs
+        });
+
+        // Try executing - if this fails due to program parsing, we'll catch and use REST API
+        try {
+          txId = await programManager.execute({
+            programName: programId,
+            functionName: functionName,
+            inputs: inputs,
+            priorityFee: fee ?? 0,
+            privateFee: false
+          });
+        } catch (pmError: any) {
+          console.warn('[Aleo Service] ProgramManager.execute failed, trying direct REST API approach:', pmError.message);
+
+          // Fallback: Use REST API to submit transaction directly
+          // This requires building the transaction manually
+          throw new Error(`ProgramManager execution failed. The Aleo SDK is having trouble with the deployed program. Error: ${pmError.message}. Please try deploying a version without the @noupgrade constructor or use a different SDK version.`);
+        }
       } catch (execError: any) {
-        console.error('[Aleo Service] executeProgram threw exception:', {
+        console.error('[Aleo Service] ProgramManager.execute threw exception:', {
           message: execError?.message,
           stack: execError?.stack,
           name: execError?.name,
@@ -437,13 +490,20 @@ class AleoService {
         };
       }
 
-      // Get employer address - we need to derive it from private key
-      // For now, we'll pass the owner as the first parameter (employer address)
-      // The executeTransition will handle the private key
-
-      // Note: In production, you'd extract the address from the private key
-      // For now, we'll use a placeholder that the executeTransition will handle
-      const owner = 'owner'; // This will be replaced by the actual address from private key
+      // Get employer address from private key
+      let employerAddress: string;
+      try {
+        const account = new Account({ privateKey: employerPrivateKey });
+        employerAddress = account.address().to_string();
+        console.log('[Aleo Service] Derived employer address:', employerAddress);
+      } catch (addressError: any) {
+        console.error('[Aleo Service] ESCROW CREATION FAILED - Address derivation:', addressError);
+        return {
+          success: false,
+          transactionId: '',
+          error: `Failed to derive address from private key: ${addressError?.message || 'Unknown error'}`,
+        };
+      }
 
       // Debug logging before Aleo call
       console.log('[Aleo Service] ESCROW CREATION - Debug Info:', {
@@ -453,9 +513,9 @@ class AleoService {
         jobIdField,
         amount: `${amount}u64`,
         employerPrivateKey: employerPrivateKey.substring(0, 10) + '...' + employerPrivateKey.substring(employerPrivateKey.length - 10),
+        employerAddress,
         freelancerAddress,
-        owner,
-        inputs: [owner, owner, freelancerAddress, `${amount}u64`, jobIdField],
+        inputs: [employerAddress, employerAddress, freelancerAddress, `${amount}u64`, jobIdField],
       });
 
       // Execute Aleo transition with comprehensive error handling
@@ -464,7 +524,7 @@ class AleoService {
         response = await this.executeTransition(
           ALEO_CONFIG.programs.escrow,
           'create_escrow',
-          [owner, owner, freelancerAddress, `${amount}u64`, jobIdField],
+          [employerAddress, employerAddress, freelancerAddress, `${amount}u64`, jobIdField],
           employerPrivateKey
         );
       } catch (transitionError: any) {
