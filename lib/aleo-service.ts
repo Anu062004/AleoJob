@@ -46,10 +46,14 @@ class AleoService {
     let lastErr: any = null;
     for (const endpoint of this.rpcEndpoints) {
       try {
-        const client = new AleoNetworkClient(endpoint);
+        // Strip trailing /testnet or / if present
+        const normalizedEndpoint = endpoint.replace(/\/testnet\/?$/, '').replace(/\/+$/, '');
+        console.log(`📡 [Aleo Service] Connecting to: ${normalizedEndpoint} (Original: ${endpoint})`);
+
+        const client = new AleoNetworkClient(normalizedEndpoint);
         // Health check; method name from Provable SDK docs
         await client.getLatestBlock();
-        console.log('✅ [Aleo Service] Connected to Aleo via:', endpoint);
+        console.log('✅ [Aleo Service] Successfully connected to:', normalizedEndpoint);
         this.client = client;
         return client;
       } catch (e: any) {
@@ -59,6 +63,35 @@ class AleoService {
     }
 
     throw lastErr ?? new Error('All Aleo endpoints unavailable');
+  }
+
+  /**
+   * Helper: GET request with endpoint failover
+   */
+  private async getWithFailover<T>(path: string): Promise<T> {
+    const endpoints = this.queryEndpoints.length ? this.queryEndpoints : this.rpcEndpoints;
+    let lastErr: any = null;
+
+    for (const endpoint of endpoints) {
+      try {
+        // Aggressively clean the base URL
+        const baseUrl = endpoint
+          .replace(/\/testnet\/?$/, '')
+          .replace(/\/testnet3\/?$/, '')
+          .replace(/\/+$/, '');
+
+        // For these direct API calls, we typically DO want /testnet in the path
+        const url = `${baseUrl}/testnet${path.startsWith('/') ? path : '/' + path}`;
+
+        console.log(`🔍 [Aleo Service] Fetching: ${url}`);
+        const res = await axios.get(url, { timeout: 10000 });
+        return res.data;
+      } catch (e: any) {
+        lastErr = e;
+        console.warn(`⚠️ [Aleo Service] Query failed for ${endpoint}:`, e.message);
+      }
+    }
+    throw lastErr || new Error('All query endpoints failed');
   }
 
   // Execute a transition (contract function call)
@@ -96,7 +129,7 @@ class AleoService {
         });
         throw new Error(`Aleo client initialization failed: ${clientError?.message || 'Unknown error'}`);
       }
-      
+
       if (!client) {
         throw new Error('Aleo client not initialized - getClient returned null');
       }
@@ -151,7 +184,7 @@ class AleoService {
         console.error('[Aleo Service] Unable to extract transaction ID from response:', txId);
         throw new Error('Transaction executed but transaction ID format is unrecognized');
       }
-      
+
       if (!transactionId || transactionId === 'unknown' || transactionId.trim() === '') {
         throw new Error('Transaction executed but no valid transaction ID returned');
       }
@@ -176,7 +209,7 @@ class AleoService {
         functionName,
         error: error,
       });
-      
+
       // Re-throw with enhanced error message
       const errorMessage = error?.message || error?.toString() || 'Unknown error';
       throw new Error(`Failed to execute transition ${functionName} in ${programId}: ${errorMessage}`);
@@ -407,7 +440,7 @@ class AleoService {
       // Get employer address - we need to derive it from private key
       // For now, we'll pass the owner as the first parameter (employer address)
       // The executeTransition will handle the private key
-      
+
       // Note: In production, you'd extract the address from the private key
       // For now, we'll use a placeholder that the executeTransition will handle
       const owner = 'owner'; // This will be replaced by the actual address from private key
@@ -490,9 +523,9 @@ class AleoService {
         name: error?.name,
         error: error,
       });
-      
+
       const errorMessage = error?.message || error?.toString() || 'Failed to create escrow - unhandled exception';
-      
+
       return {
         success: false,
         transactionId: '',
@@ -518,7 +551,7 @@ class AleoService {
       // The escrowRecordId is the PaymentEscrow record identifier
       // The Aleo SDK will fetch the record from the chain when executing the transition
       const escrowRecord = escrowRecordId;
-      
+
       // Completion proof - in production, this could be a ZK proof of job completion
       // For now, we use a placeholder. This can be enhanced with actual proof generation.
       const completionProof = '0field';

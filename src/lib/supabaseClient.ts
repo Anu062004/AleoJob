@@ -38,7 +38,7 @@ export function createSupabaseClientWithToken(aleoAddress: string) {
     });
 
     // Set the aleo_address config for RLS policies
-    // This requires the set_config function in your database
+    // This requires the set_app_config function in your database
     client
         .rpc('set_app_config', {
             setting_name: 'app.aleo_address',
@@ -46,7 +46,8 @@ export function createSupabaseClientWithToken(aleoAddress: string) {
         })
         .then(({ error }) => {
             if (error) {
-                console.warn('Failed to set config for RLS:', error);
+                console.warn('⚠️ [Supabase] Failed to set config for RLS. This is expected if you haven\'t run the SQL script yet.', error);
+                console.info('👉 To fix this, please run the SQL script provided in "supabase/fix_supabase_rpc.sql" in your Supabase SQL Editor.');
             } else {
                 console.log('Successfully set RLS config for:', aleoAddress);
             }

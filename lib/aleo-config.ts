@@ -6,18 +6,28 @@ export const ALEO_CONFIG = {
   network: 'testnet' as const, // Force testnet - change in production
   // RPC endpoints (used for submit/broadcast-style calls; ordered by preference)
   // Recommended combo: Provable testnet first, then local snarkOS as fallback.
-  rpcEndpoints: (
-    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_RPC_ENDPOINTS) ||
-    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_ENDPOINTS) ||
-    (typeof process !== 'undefined' && process.env?.ALEO_ENDPOINT) ||
-    (typeof process !== 'undefined' && process.env?.ENDPOINT) ||
-    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_RPC_ENDPOINTS) ||
-    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_ENDPOINTS) ||
-    'https://api.explorer.aleo.org/v1/testnet,https://api.explorer.provable.com/v1/testnet'
-  )
-    .split(',')
-    .map((s: any) => s.trim())
-    .filter(Boolean),
+  rpcEndpoints: (() => {
+    const raw = (typeof process !== 'undefined' && (
+      process.env?.NEXT_PUBLIC_ALEO_RPC_ENDPOINTS ||
+      process.env?.ALEO_RPC_ENDPOINTS ||
+      process.env?.NEXT_PUBLIC_ALEO_ENDPOINTS ||
+      process.env?.ALEO_ENDPOINT ||
+      process.env?.ENDPOINT
+    )) ||
+      (typeof import.meta !== 'undefined' && (
+        (import.meta as any).env?.VITE_ALEO_RPC_ENDPOINTS ||
+        (import.meta as any).env?.VITE_ALEO_ENDPOINTS
+      )) ||
+      'https://api.explorer.aleo.org/v1,https://api.explorer.provable.com/v1';
+
+    const endpoints = raw.split(',')
+      .map((s: any) => s.trim())
+      .map((s: string) => s.replace(/\/testnet\/?$/, '')) // More aggressive normalization
+      .filter(Boolean);
+
+    console.log('🔍 [Aleo Config] RPC Endpoints:', endpoints);
+    return endpoints;
+  })(),
 
   // Explorer/query endpoints (used for reads like balances/records; ordered by preference)
   queryEndpoints: (
@@ -25,19 +35,20 @@ export const ALEO_CONFIG = {
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_QUERY_ENDPOINT) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_QUERY_ENDPOINTS) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_QUERY_ENDPOINT) ||
-    'https://api.explorer.aleo.org/v1/testnet'
+    'https://api.explorer.aleo.org/v1'
   )
     .split(',')
-    .map((s) => s.trim())
+    .map((s: any) => s.trim())
+    .map((s: string) => s.endsWith('/testnet') ? s.replace('/testnet', '') : s)
     .filter(Boolean),
 
   // Back-compat single fields (some older code may still reference these)
-  endpoint: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_ENDPOINT) ||
+  endpoint: ((typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_ENDPOINT) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_ENDPOINT) ||
-    'https://api.explorer.aleo.org/v1/testnet',
-  queryEndpoint: (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_QUERY_ENDPOINT) ||
+    'https://api.explorer.aleo.org/v1').replace(/\/testnet$/, ''),
+  queryEndpoint: ((typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ALEO_QUERY_ENDPOINT) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ALEO_QUERY_ENDPOINT) ||
-    'https://api.explorer.aleo.org/v1/testnet',
+    'https://api.explorer.aleo.org/v1').replace(/\/testnet$/, ''),
 
   // Program IDs (deployed to testnet)
   programs: {
