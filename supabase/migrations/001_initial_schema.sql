@@ -99,3 +99,4 @@ CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications
 
 
 
+

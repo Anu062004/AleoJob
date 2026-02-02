@@ -126,10 +126,13 @@ const renderApp = async () => {
       hasBackendUrl: !!import.meta.env.NEXT_PUBLIC_BACKEND_URL,
     });
 
+    console.log('📦 Found root element, starting React render...');
+
     const root = ReactDOM.createRoot(rootElement);
-    
+
     // Render with wallet provider if wallets are available, otherwise render without it
     if (wallets.length > 0) {
+      console.log('🛡️ Rendering with Aleo Wallet Provider');
       root.render(
         <React.StrictMode>
           <ErrorBoundary>
@@ -170,7 +173,7 @@ const renderApp = async () => {
         </React.StrictMode>
       );
     }
-    
+
     console.log('✅ React app rendered successfully');
   } catch (error) {
     showError(error);
@@ -179,12 +182,12 @@ const renderApp = async () => {
 
 // Set a timeout to show error if app doesn't load
 const loadTimeout = setTimeout(() => {
-  console.error('⏱️ App load timeout - checking if React rendered...');
+  console.error('⏱️ App load timeout (5s) - checking if React rendered...');
   const rootContent = rootElement.innerHTML;
   if (rootContent.includes('Loading AleoJob')) {
-    showError(new Error('Application failed to load within 10 seconds. Check the browser console for errors.'));
+    showError(new Error('Application failed to load within 5 seconds. This usually means a fatal initialization error occurred. Check the browser console (F12) for the specific error.'));
   }
-}, 10000);
+}, 5000);
 
 // Start rendering
 renderApp().then(() => {

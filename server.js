@@ -1,6 +1,8 @@
 // Express server to handle API routes (converted from Next.js format)
 // Run this with: npm run dev:api or node server.js
 
+console.log('🚀 INITIALIZING ALEO BACKEND SERVER...');
+
 // Load environment variables FIRST
 import 'dotenv/config';
 
