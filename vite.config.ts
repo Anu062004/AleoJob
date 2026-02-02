@@ -6,11 +6,15 @@ import path from 'path';
 export default defineConfig({
     plugins: [react()],
     envPrefix: 'NEXT_PUBLIC_',
-    base: '/', // Ensure base path is correct for Vercel
+    base: '/',
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
         },
+    },
+    define: {
+        // Resolve 'global' is not defined issues in some SDKs
+        'global': 'window',
     },
     server: {
         port: 3000,
@@ -20,37 +24,18 @@ export default defineConfig({
                 target: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001',
                 changeOrigin: true,
                 secure: false,
-                // Don't rewrite the path - proxy as-is
             },
         },
-        // Exclude app directory from Vite's module resolution
         fs: {
             strict: false,
         },
     },
     build: {
         outDir: 'dist',
-        sourcemap: false, // Disable sourcemaps in production for smaller builds
-        target: 'esnext', // Support modern JS features including top-level await
+        sourcemap: false,
+        target: 'esnext',
         rollupOptions: {
             output: {
-                manualChunks: (id) => {
-                    // Exclude @provablehq/sdk from chunking to avoid top-level await issues
-                    // It will be bundled inline or as a separate ES module
-                    if (id.includes('@provablehq/sdk')) {
-                        return undefined; // Don't create a manual chunk for this
-                    }
-                    if (id.includes('node_modules')) {
-                        if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-                            return 'react-vendor';
-                        }
-                        if (id.includes('@provablehq/aleo-wallet-adaptor')) {
-                            return 'aleo-wallet';
-                        }
-                        return 'vendor';
-                    }
-                },
-                // Ensure all chunks use ES module format to support top-level await
                 format: 'es',
             },
         },
