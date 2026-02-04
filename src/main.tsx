@@ -11,6 +11,7 @@ import { WalletModalProvider } from '@provablehq/aleo-wallet-adaptor-react-ui';
 import '@provablehq/aleo-wallet-adaptor-react-ui/dist/styles.css';
 import { PuzzleWalletAdapter } from '@provablehq/aleo-wallet-adaptor-puzzle';
 import { LeoWalletAdapter } from '@provablehq/aleo-wallet-adaptor-leo';
+import { FoxWalletAdapter } from '@provablehq/aleo-wallet-adaptor-fox';
 import { Network } from '@provablehq/aleo-types';
 import { DecryptPermission } from '@provablehq/aleo-wallet-adaptor-core';
 
@@ -19,10 +20,11 @@ const PROGRAMS = [
     'job_marketplace_escrow_engine.aleo',
 ];
 
-// Initialize wallet adapters
+// Initialize wallet adapters - order matters (first is default)
 const wallets = [
+    new PuzzleWalletAdapter(), // Try Puzzle first - more stable
     new LeoWalletAdapter(),
-    new PuzzleWalletAdapter(),
+    new FoxWalletAdapter(),
 ];
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -33,8 +35,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     wallets={wallets}
                     autoConnect={false}
                     network={Network.TESTNET3}
-                    decryptPermission={DecryptPermission.UponRequest}
+                    decryptPermission={DecryptPermission.AutoDecrypt}
                     programs={PROGRAMS}
+                    onError={(error) => {
+                        console.error('Wallet connection error:', error);
+                        alert(`Wallet connection failed: ${error.message}\n\nPlease make sure:\n1. Your wallet is unlocked\n2. You're on Testnet Beta\n3. You approve the connection request\n\nTry refreshing the page and connecting again.`);
+                    }}
                 >
                     <WalletModalProvider>
                         <App />
