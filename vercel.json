@@ -20,8 +20,6 @@
         }
     ],
     "env": {
-        "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
         "NEXT_PUBLIC_BACKEND_URL": "https://aleojob.onrender.com",
         "NEXT_PUBLIC_ALEO_NETWORK": "testnet",
         "NEXT_PUBLIC_ALEO_ENDPOINT": "https://api.provable.com/v2/testnet",
