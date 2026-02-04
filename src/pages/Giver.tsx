@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
-import { Users, FileText, DollarSign, X, Loader2, Plus, ChevronDown, ChevronUp, Lock, Unlock, RefreshCw } from 'lucide-react';
+import { Users, FileText, DollarSign, X, Loader2, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { transferCredits } from '../lib/credit-transfer';
@@ -118,7 +118,7 @@ function Giver() {
             }
 
             // Find the job and application to get amount
-            const jobWithApp = jobs.find(job => 
+            const jobWithApp = jobs.find(job =>
                 job.applications?.some(app => app.id === applicationId)
             );
             const application = jobWithApp?.applications?.find(app => app.id === applicationId);
@@ -182,7 +182,7 @@ function Giver() {
             // Read response body only once
             let data: any;
             const contentType = response.headers.get('content-type');
-            
+
             try {
                 if (contentType && contentType.includes('application/json')) {
                     // Response is JSON
@@ -203,7 +203,7 @@ function Giver() {
             if (!response.ok) {
                 // Backend returns 'message' field, not 'error'
                 let errorMessage = data?.message || data?.error;
-                
+
                 // If no message in data, try to extract from data itself
                 if (!errorMessage && data) {
                     if (typeof data === 'string') {
@@ -212,12 +212,12 @@ function Giver() {
                         errorMessage = JSON.stringify(data);
                     }
                 }
-                
+
                 // Fallback to status text
                 if (!errorMessage) {
                     errorMessage = `Server error: ${response.status} ${response.statusText}`;
                 }
-                
+
                 console.error('[Frontend] API error response:', {
                     status: response.status,
                     statusText: response.statusText,
@@ -231,7 +231,7 @@ function Giver() {
             if (!data || !data.success) {
                 // Backend returns 'message' field, not 'error'
                 let errorMessage = data?.message || data?.error;
-                
+
                 // If no message, try to extract from data
                 if (!errorMessage && data) {
                     if (typeof data === 'string') {
@@ -240,12 +240,12 @@ function Giver() {
                         errorMessage = JSON.stringify(data);
                     }
                 }
-                
+
                 // Fallback
                 if (!errorMessage) {
                     errorMessage = 'Failed to accept application';
                 }
-                
+
                 console.error('[Frontend] API returned success=false:', data);
                 throw new Error(errorMessage);
             }
@@ -267,7 +267,7 @@ function Giver() {
         } catch (error: any) {
             // Extract error message from various error formats
             let errorMessage = 'Unknown error occurred';
-            
+
             if (error instanceof Error) {
                 errorMessage = error.message;
             } else if (typeof error === 'string') {
@@ -276,7 +276,7 @@ function Giver() {
                 // Try various properties that might contain the error message
                 errorMessage = error.message || error.error || error.msg || error.toString();
             }
-            
+
             // If still no message, try to stringify the error
             if (!errorMessage || errorMessage === '[object Object]' || errorMessage === 'Object') {
                 try {
@@ -285,14 +285,14 @@ function Giver() {
                     errorMessage = String(error);
                 }
             }
-            
+
             console.error('[Frontend] Failed to accept application:', {
                 error: errorMessage,
                 originalError: error,
                 stack: error?.stack,
                 name: error?.name,
             });
-            
+
             alert(`❌ Failed to accept application: ${errorMessage}`);
         }
     };
@@ -466,7 +466,7 @@ function Giver() {
             const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
             const zkHash = creditResult.transactionId || `zk_${Date.now()}`;
 
-            const { data: newJob, error: jobError } = await client
+            const { error: jobError } = await client
                 .from('jobs')
                 .insert({
                     giver_id: userId,
@@ -484,7 +484,9 @@ function Giver() {
 
             alert('Job posted successfully!');
 
-            setJobs([newJob, ...jobs]);
+            // Refresh jobs from database to get complete structure with applications and escrows
+            await fetchJobs();
+
             setFormData({
                 title: '',
                 description: '',
@@ -611,7 +613,7 @@ function Giver() {
                                     className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                     placeholder="e.g. Frontend Developer"
                                     disabled={isProcessing}
-                                    style={{ 
+                                    style={{
                                         backgroundColor: '#1A1A24',
                                         color: '#F8FAFC',
                                         borderColor: 'rgba(255, 255, 255, 0.08)'
@@ -631,7 +633,7 @@ function Giver() {
                                     className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none resize-none"
                                     placeholder="Describe the job requirements..."
                                     disabled={isProcessing}
-                                    style={{ 
+                                    style={{
                                         backgroundColor: '#1A1A24',
                                         color: '#F8FAFC',
                                         borderColor: 'rgba(255, 255, 255, 0.08)'
@@ -650,7 +652,7 @@ function Giver() {
                                     className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                     placeholder="React, TypeScript, Leo"
                                     disabled={isProcessing}
-                                    style={{ 
+                                    style={{
                                         backgroundColor: '#1A1A24',
                                         color: '#F8FAFC',
                                         borderColor: 'rgba(255, 255, 255, 0.08)'
@@ -671,7 +673,7 @@ function Giver() {
                                         onChange={(e) => setFormData({ ...formData, budgetMin: e.target.value })}
                                         className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                         disabled={isProcessing}
-                                        style={{ 
+                                        style={{
                                             backgroundColor: '#1A1A24',
                                             color: '#F8FAFC',
                                             borderColor: 'rgba(255, 255, 255, 0.08)'
@@ -690,7 +692,7 @@ function Giver() {
                                         onChange={(e) => setFormData({ ...formData, budgetMax: e.target.value })}
                                         className="w-full px-4 py-2.5 rounded-xl border transition-colors focus:outline-none"
                                         disabled={isProcessing}
-                                        style={{ 
+                                        style={{
                                             backgroundColor: '#1A1A24',
                                             color: '#F8FAFC',
                                             borderColor: 'rgba(255, 255, 255, 0.08)'
@@ -767,25 +769,29 @@ function Giver() {
                                                 <span>{job.applications?.length || 0} applicants</span>
                                             </div>
 
-                                            {/* Escrow Status */}
-                                            {job.escrows && job.escrows.length > 0 && (
-                                                <div className="mt-3 pt-3 border-t border-border-subtle">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs text-text-muted">Escrow:</span>
-                                                        <EscrowStatusBadge status={job.escrows[0].status} />
-                                                        <span className="text-xs text-text-muted">
-                                                            {job.escrows[0].amount} credits
-                                                        </span>
-                                                    </div>
+                                            {/* Escrow Status - Always show */}
+                                            <div className="mt-3 pt-3 border-t border-border-subtle">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-text-muted">Escrow:</span>
+                                                    {job.escrows && job.escrows.length > 0 ? (
+                                                        <>
+                                                            <EscrowStatusBadge status={job.escrows[0].status} />
+                                                            <span className="text-xs text-text-muted">
+                                                                {job.escrows[0].amount} credits
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <Badge variant="default" size="sm">Not Created</Badge>
+                                                    )}
                                                 </div>
-                                            )}
+                                            </div>
 
                                             {job.payment_status && (
                                                 <div className="mt-2">
                                                     <Badge variant={
                                                         job.payment_status === 'locked' ? 'warning' :
-                                                        job.payment_status === 'completed' ? 'success' :
-                                                        job.payment_status === 'refunded' ? 'destructive' : 'default'
+                                                            job.payment_status === 'completed' ? 'success' :
+                                                                job.payment_status === 'refunded' ? 'warning' : 'default'
                                                     }>
                                                         Payment: {job.payment_status}
                                                     </Badge>
@@ -854,7 +860,7 @@ function Giver() {
                                                                     Score: {app.seeker.profile_score}
                                                                 </span>
                                                             )}
-                                                            {app.status === 'pending' && (
+                                                            {app.status?.toLowerCase().trim() === 'pending' && (
                                                                 <div className="flex gap-2 mt-1">
                                                                     <Button
                                                                         variant="primary"
@@ -891,7 +897,7 @@ function Giver() {
                                             status={job.escrows[0].status}
                                             employerPrivateKey={''} // Will prompt when needed
                                             aleoAddress={address || ''}
-                                            onStatusChange={async (newStatus) => {
+                                            onStatusChange={async () => {
                                                 // Refresh jobs to get updated escrow status
                                                 await fetchJobs();
                                             }}
