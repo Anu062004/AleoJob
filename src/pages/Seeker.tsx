@@ -1,223 +1,382 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Card } from '@/components/ui/Card';
+import { useEffect, useMemo, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
-import { Briefcase, Star, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { SeekerDashboard } from '@/components/web3/SeekerDashboard';
 import { CVUpload } from '@/components/CVUpload';
 import { ProfileEditor } from '@/components/ProfileEditor';
+import { EmptyState } from '@/components/web3/EmptyState';
 import { createSupabaseClientWithToken } from '@/lib/supabaseClient';
+import { apiRequest } from '@/lib/apiClient';
+import { fetchMarketplaceProfile, isSeekerOnboardingComplete } from '@/lib/profileRole';
+import { Button } from '@/components/ui/Button';
+
+interface SeekerApplication {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  status: string;
+  createdAt: string;
+  paymentStatus?: 'pending' | 'locked' | 'completed' | 'refunded';
+  workProofStatus: 'not_submitted' | 'submitted' | 'verified' | 'rejected';
+  workProofHash?: string;
+  workProofTx?: string;
+  workProofNotes?: string;
+  workProofUrl?: string;
+  workProofSubmittedAt?: string;
+}
+
+interface WorkProofResponse {
+  success: boolean;
+  error?: string;
+}
+
+function decodeProofUrl(notes: unknown): string {
+  const text = typeof notes === 'string' ? notes.trim() : '';
+  if (!text) return '';
+  if (text.toLowerCase().startsWith('url:')) {
+    return text.slice(4).trim();
+  }
+  return '';
+}
+
+interface ReputationResponse {
+  success: boolean;
+  data?: {
+    score?: number;
+  };
+}
 
 function Seeker() {
-    const { connected, address } = useWallet();
-    const [loading, setLoading] = useState(true);
-    const [reputation, setReputation] = useState(0);
-    const [profile, setProfile] = useState<any>(null);
-    const [applications, setApplications] = useState<any[]>([]);
-    const [completedJobsCount, setCompletedJobsCount] = useState(0);
+  const { connected, address } = useWallet();
+  const [loading, setLoading] = useState(true);
+  const [roleStatus, setRoleStatus] = useState<'loading' | 'unassigned' | 'seeker' | 'giver'>('loading');
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [reputation, setReputation] = useState(0);
+  const [profile, setProfile] = useState<any>(null);
+  const [applications, setApplications] = useState<SeekerApplication[]>([]);
+  const [completedJobsCount, setCompletedJobsCount] = useState(0);
+  const [proofDrafts, setProofDrafts] = useState<Record<string, string>>({});
+  const [submittingProofId, setSubmittingProofId] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (connected && address) {
-            fetchData();
-        }
-    }, [connected, address]);
+  const refreshReputation = async (aleoAddress: string) => {
+    try {
+      const response = await apiRequest<ReputationResponse>('/api/reputation/recalculate', {
+        method: 'POST',
+        body: { aleoAddress },
+      });
 
-    const fetchData = async () => {
-        if (!address) return;
-        try {
-            setLoading(true);
-            const client = createSupabaseClientWithToken(address);
-
-            const { data: userData, error: userError } = await client
-                .from('profiles')
-                .select('*')
-                .eq('aleo_address', address)
-                .single();
-
-            if (userError && userError.code !== 'PGRST116') {
-                console.error('Error fetching profile:', userError);
-            } else if (userData) {
-                setProfile(userData);
-                setReputation(userData.profile_score || 0);
-
-                const { data: appsData, error: appsError } = await client
-                    .from('applications')
-                    .select(`
-                        id,
-                        status,
-                        created_at,
-                        job:jobs (
-                            title
-                        )
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (appsError) {
-                    console.error('Error fetching applications:', appsError);
-                } else {
-                    setApplications(appsData || []);
-                    setCompletedJobsCount(appsData?.filter((a: any) => a.status === 'accepted').length || 0);
-                }
-            }
-        } catch (error) {
-            console.error('Error in Seeker Dashboard:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'accepted':
-                return <Badge variant="success">Accepted</Badge>;
-            case 'rejected':
-                return <Badge variant="warning">Rejected</Badge>;
-            default:
-                return <Badge variant="default">Pending</Badge>;
-        }
-    };
-
-    if (!connected) {
-        return (
-            <div className="min-h-screen flex items-center justify-center px-4">
-                <Card padding="lg" className="max-w-md w-full text-center">
-                    <h1 className="text-xl font-semibold text-text-primary mb-2">Seeker Dashboard</h1>
-                    <p className="text-text-secondary">Connect your wallet to access the dashboard.</p>
-                </Card>
-            </div>
-        );
+      if (response.success) {
+        setReputation(Number(response.data?.score || 0));
+      }
+    } catch (error) {
+      console.warn('[Seeker] Reputation refresh failed:', error);
     }
+  };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="animate-spin text-aleo-purple" size={32} />
-            </div>
-        );
+  const fetchData = async () => {
+    if (!address) return;
+
+    try {
+      setLoading(true);
+      const roleProfile = await fetchMarketplaceProfile(address);
+
+      if (!roleProfile?.role) {
+        setRoleStatus('unassigned');
+        setProfile(null);
+        setApplications([]);
+        setReputation(0);
+        setCompletedJobsCount(0);
+        setOnboardingComplete(false);
+        return;
+      }
+
+      if (roleProfile.role !== 'seeker') {
+        setRoleStatus('giver');
+        setProfile(null);
+        setApplications([]);
+        setReputation(0);
+        setCompletedJobsCount(0);
+        setOnboardingComplete(false);
+        return;
+      }
+
+      setRoleStatus('seeker');
+      const client = createSupabaseClientWithToken(address);
+
+      const { data: userData, error: userError } = await client
+        .from('profiles')
+        .select(
+          `
+            id,
+            role,
+            email,
+            education_level,
+            experience_years,
+            profile_score,
+            completed_jobs,
+            cvs (
+              file_path,
+              uploaded_at
+            )
+          `
+        )
+        .eq('aleo_address', address)
+        .single();
+
+      if (userError || !userData) {
+        throw userError || new Error('Seeker profile not found.');
+      }
+
+      const hasCv = Array.isArray(userData.cvs) && userData.cvs.length > 0;
+      setOnboardingComplete(isSeekerOnboardingComplete(roleProfile, hasCv));
+      setProfile(userData);
+
+      const { data: appsData, error: appsError } = await client
+        .from('applications')
+        .select(
+          `
+            id,
+            job_id,
+            status,
+            created_at,
+            work_proof_status,
+            work_proof_hash,
+            work_proof_tx,
+            work_proof_notes,
+            work_proof_submitted_at,
+            jobs (
+              title,
+              payment_status
+            )
+          `
+        )
+        .eq('seeker_id', userData.id)
+        .order('created_at', { ascending: false });
+
+      if (appsError) throw appsError;
+
+      const mappedApps: SeekerApplication[] = (appsData || []).map((application: any) => ({
+        id: application.id,
+        jobId: application.job_id,
+        jobTitle: application.jobs?.title || 'Unknown job',
+        status: application.status,
+        createdAt: application.created_at,
+        paymentStatus: application.jobs?.payment_status,
+        workProofStatus: application.work_proof_status || 'not_submitted',
+        workProofHash: application.work_proof_hash || '',
+        workProofTx: application.work_proof_tx || '',
+        workProofNotes: application.work_proof_notes || '',
+        workProofUrl: decodeProofUrl(application.work_proof_notes),
+        workProofSubmittedAt: application.work_proof_submitted_at || '',
+      }));
+
+      setApplications(mappedApps);
+      setCompletedJobsCount(Number(userData.completed_jobs || 0));
+      setReputation(Number(userData.profile_score || 0));
+
+      await refreshReputation(address);
+    } catch (error) {
+      console.error('[Seeker] fetchData failed:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return (
-        <div className="min-h-screen">
-            <div className="container mx-auto px-4 py-8">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-semibold text-text-primary mb-1">Seeker Dashboard</h1>
-                    <p className="text-text-secondary text-sm">Manage your profile and applications</p>
-                </div>
+  useEffect(() => {
+    if (connected && address) {
+      void fetchData();
+    } else {
+      setRoleStatus('loading');
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected, address]);
 
-                {/* Stats */}
-                <div className="grid md:grid-cols-3 gap-4 mb-8">
-                    <Card padding="md">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-surface-elevated rounded-lg flex items-center justify-center">
-                                <Briefcase className="text-aleo-purple" size={18} />
-                            </div>
-                            <div>
-                                <p className="text-text-muted text-sm">Applications</p>
-                                <p className="text-xl font-semibold text-text-primary">{applications.length}</p>
-                            </div>
-                        </div>
-                    </Card>
-
-                    <Card padding="md">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-surface-elevated rounded-lg flex items-center justify-center">
-                                <CheckCircle className="text-status-success" size={18} />
-                            </div>
-                            <div>
-                                <p className="text-text-muted text-sm">Completed</p>
-                                <p className="text-xl font-semibold text-text-primary">{completedJobsCount}</p>
-                            </div>
-                        </div>
-                    </Card>
-
-                    <Card padding="md">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-surface-elevated rounded-lg flex items-center justify-center">
-                                <Star className="text-status-warning" size={18} />
-                            </div>
-                            <div>
-                                <p className="text-text-muted text-sm">Reputation</p>
-                                <p className="text-xl font-semibold text-text-primary">{reputation}/100</p>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-
-                <div className="grid lg:grid-cols-3 gap-6">
-                    {/* Applications */}
-                    <div className="lg:col-span-2 space-y-4">
-                        <Card padding="md">
-                            <h2 className="text-lg font-medium text-text-primary mb-4">Your Applications</h2>
-                            {applications.length > 0 ? (
-                                <div className="space-y-3">
-                                    {applications.map((app) => (
-                                        <div
-                                            key={app.id}
-                                            className="p-4 bg-surface-elevated rounded-xl border border-border-subtle flex items-center justify-between"
-                                        >
-                                            <div>
-                                                <h3 className="text-text-primary font-medium mb-1">
-                                                    {app.job?.title || 'Unknown Job'}
-                                                </h3>
-                                                <p className="text-text-muted text-sm">
-                                                    Applied {new Date(app.created_at).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                            {getStatusBadge(app.status)}
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <p className="text-text-muted mb-4">No applications yet</p>
-                                    <Link to="/jobs">
-                                        <Button variant="primary" size="sm">
-                                            Browse Jobs
-                                            <ArrowRight className="ml-2" size={14} />
-                                        </Button>
-                                    </Link>
-                                </div>
-                            )}
-                        </Card>
-
-                        {/* Quick Action */}
-                        <Card padding="md">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-text-primary font-medium mb-1">Find Work</h2>
-                                    <p className="text-text-muted text-sm">Browse available opportunities</p>
-                                </div>
-                                <Link to="/jobs">
-                                    <Button variant="secondary" size="sm">
-                                        Browse Jobs
-                                    </Button>
-                                </Link>
-                            </div>
-                        </Card>
-                    </div>
-
-                    {/* Profile & CV */}
-                    <div className="space-y-4">
-                        {address && (
-                            <>
-                                <ProfileEditor aleoAddress={address} onUpdate={fetchData} />
-                                <CVUpload
-                                    aleoAddress={address}
-                                    existingCV={profile?.cv?.[0] ? {
-                                        filePath: profile.cv[0].file_path,
-                                        uploadedAt: profile.cv[0].uploaded_at
-                                    } : null}
-                                    onUploadSuccess={fetchData}
-                                />
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
+  const proofTargets = useMemo(() => {
+    return applications.filter(
+      (application) => application.status === 'accepted' && application.paymentStatus === 'locked'
     );
+  }, [applications]);
+
+  const submitProof = async (application: SeekerApplication) => {
+    if (!address) {
+      alert('Wallet address is required.');
+      return;
+    }
+
+    const draft = String(proofDrafts[application.id] || '').trim();
+    if (!draft) {
+      alert('Enter a proof URL first.');
+      return;
+    }
+
+    setSubmittingProofId(application.id);
+    try {
+      const response = await apiRequest<WorkProofResponse>('/api/work-proofs/submit', {
+        method: 'POST',
+        body: {
+          applicationId: application.id,
+          aleoAddress: address,
+          proofUrl: draft,
+        },
+      });
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to store work proof');
+      }
+
+      setProofDrafts((prev) => ({ ...prev, [application.id]: '' }));
+      await fetchData();
+      alert('Proof URL submitted. Waiting for giver verification.');
+    } catch (error: any) {
+      console.error('[Seeker] Proof submission failed:', error);
+      alert(`Failed to submit proof: ${error?.message || 'Unknown error'}`);
+    } finally {
+      setSubmittingProofId(null);
+    }
+  };
+
+  if (!connected) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-20 md:px-6">
+        <EmptyState
+          title="Wallet Not Initialized"
+          description="Initialize Wallet to unlock your Seeker Control Panel."
+        />
+      </div>
+    );
+  }
+
+  if (loading || roleStatus === 'loading') {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-20 text-center text-brand-text-muted md:px-6">
+        Syncing seeker control panel...
+      </div>
+    );
+  }
+
+  if (roleStatus === 'unassigned') {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-20 md:px-6">
+        <EmptyState
+          title="Role Selection Required"
+          description="Select Job Seeker in onboarding first. This wallet cannot use seeker actions until role is assigned."
+          actionLabel="Go To Role Selection"
+          onAction={() => window.location.assign('/get-started')}
+        />
+      </div>
+    );
+  }
+
+  if (roleStatus !== 'seeker') {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-20 md:px-6">
+        <EmptyState
+          title="Wallet Locked As Giver"
+          description="This wallet cannot switch to Job Seeker. Use your Giver panel or connect a different wallet."
+          actionLabel="Open Giver Panel"
+          onAction={() => window.location.assign('/giver')}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-10 md:px-6">
+      {!onboardingComplete && (
+        <section className="glass-card rounded-2xl p-4">
+          <p className="font-medium text-brand-text">Seeker onboarding incomplete</p>
+          <p className="mt-1 text-sm text-brand-text-muted">
+            Add email, qualification, experience, and upload your CV to fully activate seeker reputation features.
+          </p>
+        </section>
+      )}
+
+      <SeekerDashboard
+        walletAddress={address || ''}
+        reputation={reputation}
+        completedJobs={completedJobsCount}
+        applications={applications}
+      />
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {address && <ProfileEditor aleoAddress={address} onUpdate={fetchData} requireSeekerFields />}
+        {address && (
+          <CVUpload
+            aleoAddress={address}
+            existingCV={
+              profile?.cvs?.[0]
+                ? {
+                  filePath: profile.cvs[0].file_path,
+                  uploadedAt: profile.cvs[0].uploaded_at,
+                }
+                : null
+            }
+            onUploadSuccess={fetchData}
+            forceSeekerRole
+          />
+        )}
+      </div>
+
+      {proofTargets.length > 0 && (
+        <section className="glass-card rounded-2xl p-5">
+          <h2 className="text-lg font-semibold text-brand-text">Submit Proof Of Work</h2>
+          <p className="mt-1 text-sm text-brand-text-muted">
+            For accepted jobs with locked escrow, submit a delivery proof URL. Giver verifies this proof before release.
+          </p>
+
+          <div className="mt-4 space-y-3">
+            {proofTargets.map((application) => (
+              <div key={application.id} className="rounded-xl border border-brand-border bg-brand-surface-elevated p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-brand-text">{application.jobTitle}</p>
+                    <p className="mt-1 text-xs text-brand-text-muted">Proof status: {application.workProofStatus}</p>
+                    {application.workProofTx && (
+                      <p className="mt-1 text-xs font-mono text-brand-text-muted">tx: {application.workProofTx}</p>
+                    )}
+                    {application.workProofUrl && (
+                      <p className="mt-1 text-xs text-brand-text-muted break-all">url: {application.workProofUrl}</p>
+                    )}
+                  </div>
+                  {application.workProofStatus === 'verified' ? (
+                    <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-300">
+                      Verified
+                    </span>
+                  ) : application.workProofStatus === 'submitted' ? (
+                    <span className="rounded-full border border-brand-border px-2.5 py-1 text-xs text-brand-text-muted">
+                      Awaiting Giver Verification
+                    </span>
+                  ) : null}
+                </div>
+
+                {application.workProofStatus !== 'verified' && (
+                  <div className="mt-3 space-y-2">
+                    <textarea
+                      value={proofDrafts[application.id] || ''}
+                      onChange={(event) => setProofDrafts((prev) => ({ ...prev, [application.id]: event.target.value }))}
+                      className="min-h-[90px] w-full rounded-xl border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-text outline-none focus:border-brand-secondary/60"
+                      placeholder="Paste proof URL (GitHub PR, demo link, docs, IPFS URL)"
+                      disabled={submittingProofId === application.id}
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        size="sm"
+                        disabled={submittingProofId === application.id}
+                        onClick={() => submitProof(application)}
+                      >
+                        {submittingProofId === application.id ? <Loader2 className="animate-spin" size={14} /> : 'Submit Proof URL'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
 }
 
 export default Seeker;

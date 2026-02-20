@@ -46,6 +46,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const cvRow = Array.isArray((profile as any).cv) ? (profile as any).cv[0] : (profile as any).cv;
+
     return NextResponse.json({
       success: true,
       profile: {
@@ -58,11 +60,11 @@ export async function GET(request: NextRequest) {
         profileScore: profile.profile_score,
         createdAt: profile.created_at,
         updatedAt: profile.updated_at,
-        cv: profile.cv ? {
-          id: profile.cv.id,
-          filePath: profile.cv.file_path,
-          uploadedAt: profile.cv.uploaded_at,
-          fileHash: profile.cv.file_hash,
+        cv: cvRow ? {
+          id: cvRow.id,
+          filePath: cvRow.file_path,
+          uploadedAt: cvRow.uploaded_at,
+          fileHash: cvRow.file_hash,
         } : null,
       },
     });
@@ -144,6 +146,8 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
 
 
 

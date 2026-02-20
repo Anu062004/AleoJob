@@ -1,0 +1,15 @@
+
+> aleo-job-marketplace@0.1.0 dev:api
+> tsx server.js
+
+🔍 [Aleo Config] RPC Endpoints: [
+  'https://api.provable.com/v2',
+  'https://testnetbeta.aleorpc.com',
+  'https://api.explorer.aleo.org'
+]
+[API] Registered accept routes
+[API] Registered escrow routes
+[API] Registered escrow sync routes
+[API] Registered transaction reconciliation routes
+[Server] Running on port 3001
+[Server] Serving frontend from: C:\Users\ankur\OneDrive\Desktop\AleoAleo\dist

@@ -28,7 +28,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
       {isOpen && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -36,18 +36,19 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           />
           <motion.div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.94, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 10 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white rounded-2xl border border-gray-200 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+            <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-brand-border shadow-card-glow">
               {title && (
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                  <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+                <div className="flex items-center justify-between border-b border-brand-border p-6">
+                  <h2 className="text-xl font-semibold text-brand-text">{title}</h2>
                   <button
                     onClick={onClose}
-                    className="text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+                    className="rounded-lg p-1 text-brand-text-muted transition-colors hover:bg-brand-surface-elevated hover:text-brand-text"
                   >
                     <X size={24} />
                   </button>
@@ -61,6 +62,8 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
     </AnimatePresence>
   );
 }
+
+
 
 
 

@@ -5,7 +5,7 @@
 
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { CheckCircle2, XCircle, ExternalLink, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
 
 interface TransactionModalProps {
   open: boolean;
@@ -61,28 +61,28 @@ export function TransactionModal({
       <div className="space-y-4">
         <div className="flex items-center justify-center py-4">
           {success ? (
-            <CheckCircle2 className="w-16 h-16 text-green-600" />
+            <CheckCircle2 className="h-16 w-16 text-emerald-300" />
           ) : (
-            <XCircle className="w-16 h-16 text-red-600" />
+            <XCircle className="h-16 w-16 text-red-300" />
           )}
         </div>
 
-        <p className="text-center text-gray-600">{getMessage()}</p>
+        <p className="text-center text-brand-text-muted">{getMessage()}</p>
 
         {transactionId && (
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <div className="rounded-xl border border-brand-border bg-brand-surface-elevated p-4">
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-500 mb-1">Transaction ID</p>
-                <p className="text-xs font-mono text-gray-900 truncate">{transactionId}</p>
+                <p className="mb-1 text-sm text-brand-text-muted">Transaction ID</p>
+                <p className="truncate font-mono text-xs text-brand-text">{transactionId}</p>
               </div>
               <a
                 href={explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-4 text-green-600 hover:text-green-700"
+                className="ml-4 text-brand-secondary transition-colors hover:text-brand-text"
               >
-                <ExternalLink className="w-5 h-5" />
+                <ExternalLink className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -93,16 +93,16 @@ export function TransactionModal({
           <Button
             variant="outline"
             onClick={() => window.open(explorerUrl, '_blank')}
-            className="flex-1 rounded-full"
+            className="flex-1"
           >
-            <ExternalLink className="w-4 h-4 mr-2" />
+            <ExternalLink className="h-4 w-4" />
             View on Explorer
           </Button>
           )}
           <Button
             onClick={onClose}
             variant="primary"
-            className="flex-1 rounded-full"
+            className="flex-1"
           >
             Close
           </Button>
@@ -111,6 +111,8 @@ export function TransactionModal({
     </Modal>
   );
 }
+
+
 
 
 

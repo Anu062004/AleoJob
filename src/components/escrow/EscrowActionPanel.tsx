@@ -1,30 +1,61 @@
-// Escrow Action Panel Component
-// Provides release and refund buttons for escrow management
-
-'use client';
-
 import { useState } from 'react';
+import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { Button } from '@/components/ui/Button';
 import { EscrowStatusBadge } from './EscrowStatusBadge';
 import { TransactionModal } from './TransactionModal';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { ApiRequestError, apiRequest } from '@/lib/apiClient';
+import { refundEscrowWithWallet, releaseEscrowWithWallet } from '@/lib/escrow-transactions';
+import { isSpendableEscrowRecordReference, normalizeEscrowRecordId } from '@/lib/escrow-record-reference';
 
 interface EscrowActionPanelProps {
   escrowId: string;
+  escrowRecordId?: string;
   status: 'locked' | 'released' | 'refunded';
-  employerPrivateKey: string;
   aleoAddress: string;
+  payeeAddress?: string;
+  completionProofField?: string;
+  canRelease?: boolean;
+  releaseBlockedReason?: string;
+  onSyncEscrowRecord?: (escrowId: string) => Promise<string | void> | string | void;
   onStatusChange?: (newStatus: 'locked' | 'released' | 'refunded') => void;
+}
+
+interface EscrowActionResponse {
+  success: boolean;
+  transactionId?: string;
+  error?: string;
 }
 
 export function EscrowActionPanel({
   escrowId,
+  escrowRecordId,
   status,
-  employerPrivateKey,
   aleoAddress,
+  payeeAddress,
+  completionProofField,
+  canRelease = true,
+  releaseBlockedReason,
+  onSyncEscrowRecord,
   onStatusChange,
 }: EscrowActionPanelProps) {
+  const { executeTransaction, transactionStatus, requestRecords } = useWallet();
+  const rawEscrowRecordId = String(escrowRecordId || '').trim();
+  const normalizedEscrowRecordId = normalizeEscrowRecordId(rawEscrowRecordId);
+  const looksLikeOpaqueObjectReference =
+    rawEscrowRecordId.startsWith('{') &&
+    rawEscrowRecordId.includes('"id"') &&
+    (rawEscrowRecordId.includes('"tag"') || rawEscrowRecordId.toLowerCase().includes('"record"'));
+  const hasEscrowRecord = Boolean(rawEscrowRecordId);
+  const hasSpendableEscrowRecord = isSpendableEscrowRecordReference(rawEscrowRecordId);
+  const hasInvalidEscrowReference =
+    Boolean(rawEscrowRecordId) &&
+    !hasSpendableEscrowRecord &&
+    !normalizedEscrowRecordId &&
+    !looksLikeOpaqueObjectReference;
+  const canAttemptEscrowAction = hasEscrowRecord || Boolean(onSyncEscrowRecord);
   const [loading, setLoading] = useState<'release' | 'refund' | null>(null);
+  const [syncingRecord, setSyncingRecord] = useState(false);
   const [txModal, setTxModal] = useState<{
     open: boolean;
     txId?: string;
@@ -32,194 +63,207 @@ export function EscrowActionPanel({
     success?: boolean;
   }>({ open: false });
 
-  const handleRelease = async () => {
+  const runEscrowAction = async (type: 'release' | 'refund') => {
     if (status !== 'locked') return;
 
-    // Get private key if not provided
-    let privateKey = employerPrivateKey;
-    if (!privateKey) {
-      const input = prompt(
-        'Enter your Aleo private key to release payment:\n\n' +
-        '⚠️ This is temporary. In production, this will use wallet signing.'
-      );
-      if (!input) {
-        return;
-      }
-      privateKey = input;
+    if (type === 'release' && !canRelease) {
+      window.alert(releaseBlockedReason || 'Release is disabled until seeker proof is verified.');
+      return;
     }
 
-    setLoading('release');
+    if (type === 'refund') {
+      const confirmed = window.confirm('Refund this escrow payment? This cannot be undone.');
+      if (!confirmed) return;
+    }
+
+    setLoading(type);
+
     try {
-      const response = await fetch('/api/aleo/escrow/release', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          escrowId,
-          employerPrivateKey: privateKey,
-          aleoAddress,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setTxModal({
-          open: true,
-          txId: data.transactionId,
-          type: 'release',
-          success: true,
-        });
-        onStatusChange?.('released');
-      } else {
-        setTxModal({
-          open: true,
-          type: 'release',
-          success: false,
-        });
+      let effectiveEscrowRecordId = rawEscrowRecordId || normalizedEscrowRecordId;
+      if (!effectiveEscrowRecordId && onSyncEscrowRecord) {
+        setSyncingRecord(true);
+        const syncedRecord = await onSyncEscrowRecord(escrowId);
+        const syncedRawRecordId = String(syncedRecord || '').trim();
+        effectiveEscrowRecordId = syncedRawRecordId || normalizeEscrowRecordId(syncedRawRecordId);
       }
-    } catch (error: any) {
-      console.error('Release payment error:', error);
+
+      if (!effectiveEscrowRecordId) {
+        throw new Error('Escrow record is missing or invalid. Click Sync Escrow Record, approve wallet record sharing, then retry.');
+      }
+
+      const executeWalletAction = async (recordId: string) => (
+        type === 'release'
+          ? releaseEscrowWithWallet(
+              executeTransaction,
+              transactionStatus,
+              requestRecords,
+              aleoAddress,
+              recordId,
+              String(payeeAddress || ''),
+              String(completionProofField || '')
+            )
+          : refundEscrowWithWallet(
+              executeTransaction,
+              transactionStatus,
+              requestRecords,
+              aleoAddress,
+              recordId,
+              0
+            )
+      );
+
+      let walletResult = await executeWalletAction(effectiveEscrowRecordId);
+      const walletErrorText = String(walletResult.error || '').toLowerCase();
+      const shouldRetryWithSync =
+        !walletResult.success &&
+        walletErrorText.includes('no spendable escrow record found') &&
+        Boolean(onSyncEscrowRecord);
+
+      if (shouldRetryWithSync && onSyncEscrowRecord) {
+        setSyncingRecord(true);
+        const syncedRecord = await onSyncEscrowRecord(escrowId);
+        const syncedRawRecordId = String(syncedRecord || '').trim();
+        const retriedRecordId =
+          syncedRawRecordId ||
+          normalizeEscrowRecordId(syncedRawRecordId) ||
+          effectiveEscrowRecordId;
+        if (retriedRecordId) {
+          walletResult = await executeWalletAction(retriedRecordId);
+          effectiveEscrowRecordId = retriedRecordId;
+        }
+      }
+
+      if (!walletResult.success || !walletResult.transactionId) {
+        throw new Error(walletResult.error || `Failed to submit ${type} transaction in wallet`);
+      }
+
+      const body = {
+        escrowId,
+        aleoAddress,
+        transactionId: walletResult.transactionId,
+        refundReason: 0,
+      };
+
+      let data: EscrowActionResponse;
+
+      try {
+        data = await apiRequest<EscrowActionResponse>(`/api/aleo/escrow/${type}`, {
+          method: 'POST',
+          body,
+        });
+      } catch (error) {
+        if (error instanceof ApiRequestError && error.status === 404) {
+          data = await apiRequest<EscrowActionResponse>(`/api/escrows/${escrowId}/${type}`, {
+            method: 'POST',
+            body,
+          });
+        } else {
+          throw error;
+        }
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || `Failed to ${type} escrow`);
+      }
+
       setTxModal({
         open: true,
-        type: 'release',
+        txId: data.transactionId || walletResult.transactionId,
+        type,
+        success: true,
+      });
+
+      onStatusChange?.(type === 'release' ? 'released' : 'refunded');
+    } catch (error: any) {
+      console.error(`[EscrowActionPanel] ${type} failed:`, error);
+      if (error?.message) {
+        window.alert(error.message);
+      }
+      setTxModal({
+        open: true,
+        type,
         success: false,
       });
     } finally {
+      setSyncingRecord(false);
       setLoading(null);
     }
   };
 
-  const handleRefund = async () => {
-    if (status !== 'locked') return;
-
-    if (!confirm('Are you sure you want to refund this payment? This action cannot be undone.')) {
-      return;
-    }
-
-    // Get private key if not provided
-    let privateKey = employerPrivateKey;
-    if (!privateKey) {
-      const input = prompt(
-        'Enter your Aleo private key to refund payment:\n\n' +
-        '⚠️ This is temporary. In production, this will use wallet signing.'
-      );
-      if (!input) {
-        return;
-      }
-      privateKey = input;
-    }
-
-    setLoading('refund');
+  const syncEscrowRecord = async () => {
+    if (!onSyncEscrowRecord) return;
+    setSyncingRecord(true);
     try {
-      const response = await fetch('/api/aleo/escrow/refund', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          escrowId,
-          employerPrivateKey: privateKey,
-          aleoAddress,
-          refundReason: 0, // 0 = cancellation
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setTxModal({
-          open: true,
-          txId: data.transactionId,
-          type: 'refund',
-          success: true,
-        });
-        onStatusChange?.('refunded');
-      } else {
-        setTxModal({
-          open: true,
-          type: 'refund',
-          success: false,
-        });
-      }
-    } catch (error: any) {
-      console.error('Refund payment error:', error);
-      setTxModal({
-        open: true,
-        type: 'refund',
-        success: false,
-      });
+      await onSyncEscrowRecord(escrowId);
+      onStatusChange?.('locked');
+    } catch (error) {
+      console.error('[EscrowActionPanel] Failed to sync escrow record:', error);
     } finally {
-      setLoading(null);
+      setSyncingRecord(false);
     }
   };
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-text-dark">Escrow Status</h3>
+      <div className="rounded-2xl border border-brand-border bg-brand-surface p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold text-brand-text">Escrow Status</h3>
           <EscrowStatusBadge status={status} />
         </div>
 
-        <div className="space-y-3">
-          {status === 'locked' && (
-            <>
-              <Button
-                onClick={handleRelease}
-                disabled={loading !== null}
-                variant="primary"
-                className="w-full rounded-full"
-              >
-                {loading === 'release' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Releasing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Release Payment
-                  </>
+        {status === 'locked' ? (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => runEscrowAction('release')}
+              disabled={loading !== null || !canAttemptEscrowAction || !canRelease || !payeeAddress}
+              size="sm"
+            >
+              {loading === 'release' ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}
+              Release
+            </Button>
+            <Button onClick={() => runEscrowAction('refund')} disabled={loading !== null || !canAttemptEscrowAction} variant="outline" size="sm">
+              {loading === 'refund' ? <Loader2 className="animate-spin" size={14} /> : <XCircle size={14} />}
+              Refund
+            </Button>
+            {!hasEscrowRecord && (
+              <div className="w-full space-y-2">
+                <p className="text-xs text-amber-300">
+                  {hasInvalidEscrowReference
+                    ? 'Escrow record reference is invalid. Sync to recover a spendable wallet record, then retry release/refund.'
+                    : 'Escrow record reference is missing. Sync to recover it (legacy rows may be re-locked on-chain), then retry release/refund.'}
+                </p>
+                {onSyncEscrowRecord && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={syncingRecord || loading !== null}
+                    onClick={syncEscrowRecord}
+                  >
+                    {syncingRecord ? <Loader2 className="animate-spin" size={14} /> : 'Sync Escrow Record'}
+                  </Button>
                 )}
-              </Button>
-
-              <Button
-                onClick={handleRefund}
-                disabled={loading !== null}
-                variant="outline"
-                className="w-full rounded-full border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
-              >
-                {loading === 'refund' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Refunding...
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Refund Payment
-                  </>
-                )}
-              </Button>
-            </>
-          )}
-
-          {status === 'released' && (
-            <div className="text-center py-4 text-text-secondary">
-              <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-600" />
-              <p className="text-sm">Payment has been released to the freelancer.</p>
-            </div>
-          )}
-
-          {status === 'refunded' && (
-            <div className="text-center py-4 text-text-secondary">
-              <XCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
-              <p className="text-sm">Payment has been refunded to you.</p>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+            {(canRelease === false || !payeeAddress) && (
+              <p className="w-full text-xs text-amber-300">
+                {releaseBlockedReason || (!payeeAddress
+                  ? 'Release is disabled until a seeker is accepted for this escrow.'
+                  : 'Release is disabled until seeker work proof is verified.')}
+              </p>
+            )}
+          </div>
+        ) : status === 'released' ? (
+          <div className="inline-flex items-center gap-2 text-xs text-emerald-300">
+            <CheckCircle2 size={14} />
+            Escrow released to freelancer.
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 text-xs text-amber-300">
+            <XCircle size={14} />
+            Escrow refunded to giver.
+          </div>
+        )}
       </div>
 
       <TransactionModal
@@ -232,8 +276,3 @@ export function EscrowActionPanel({
     </>
   );
 }
-
-
-
-
-

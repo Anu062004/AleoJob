@@ -1,8 +1,14 @@
 // Job Registry Program
 // Manages private job postings and applications
-// Privacy: Job details are private, only matched candidates can see them
+// Privacy: Job details and applicant information are kept private
 
-program job_registry.aleo {
+program job_registry_v3.aleo {
+    
+    @noupgrade
+    async constructor() {
+        // The Leo compiler automatically generates the constructor logic.
+    }
+
     // Job Record (private to Job Giver and matched Job Seekers)
     record JobPosting {
         owner: address, // Job Giver address
@@ -37,6 +43,8 @@ program job_registry.aleo {
         budget_max: u64,
         deadline_block: u64,
     ) -> JobPosting {
+        assert(budget_max >= budget_min);
+        assert(deadline_block > 0u64);
         return JobPosting {
             owner: owner,
             budget_min: budget_min,
@@ -53,6 +61,9 @@ program job_registry.aleo {
         job_posting: JobPosting,
         proposed_budget: u64,
     ) -> JobApplication {
+        assert(job_posting.status == 0u8);
+        assert(proposed_budget >= job_posting.budget_min);
+        assert(proposed_budget <= job_posting.budget_max);
         return JobApplication {
             owner: owner,
             applicant: applicant,
@@ -67,6 +78,8 @@ program job_registry.aleo {
         job_posting: JobPosting,
         application: JobApplication,
     ) -> JobPosting {
+        assert(job_posting.status == 0u8);
+        assert(application.status == 0u8);
         return JobPosting {
             owner: job_posting.owner,
             budget_min: job_posting.budget_min,
@@ -85,10 +98,4 @@ program job_registry.aleo {
     ) -> bool {
         return status == 0u8 && current_block <= deadline_block;
     }
-
-    @noupgrade
-    async constructor() {
-        // The Leo compiler automatically generates the constructor logic.
-    }
 }
-

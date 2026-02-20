@@ -1,6 +1,22 @@
 -- Escrow Table Migration
 -- Adds escrow functionality for job payments
 
+-- Ensure profiles table exists before creating escrows FK references.
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  aleo_address TEXT UNIQUE NOT NULL,
+  name TEXT,
+  skills TEXT[] DEFAULT '{}',
+  experience_years INT DEFAULT 0,
+  education_level TEXT,
+  profile_score INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_profiles_aleo_address ON profiles(aleo_address);
+CREATE INDEX IF NOT EXISTS idx_profiles_profile_score ON profiles(profile_score DESC);
+
 -- Escrow Table
 CREATE TABLE escrows (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -48,4 +64,3 @@ CREATE TRIGGER update_escrows_updated_at BEFORE UPDATE ON escrows
 
 -- Add comment
 COMMENT ON TABLE escrows IS 'Stores escrow records for job payments on Aleo blockchain';
-

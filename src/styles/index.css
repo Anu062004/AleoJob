@@ -1,10 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+}
+
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
@@ -13,129 +17,98 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  background: #05070f;
+  color: #e6edf3;
+  font-family: 'Space Grotesk', 'Sora', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #0F1117;
-  min-height: 100vh;
-  color: #F3F4F6;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.protocol-shell {
+  background:
+    radial-gradient(circle at 12% 14%, rgba(124, 92, 255, 0.24), transparent 42%),
+    radial-gradient(circle at 86% 12%, rgba(0, 229, 255, 0.2), transparent 45%),
+    linear-gradient(180deg, rgba(5, 7, 15, 1), rgba(5, 7, 15, 0.98));
 }
 
-::-webkit-scrollbar-track {
-  background: #1A1D26;
+.protocol-grid {
+  background-image:
+    linear-gradient(rgba(139, 155, 176, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 155, 176, 0.08) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 95%);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #3B3F4F;
-  border-radius: 4px;
+.glass-card {
+  background: linear-gradient(145deg, rgba(13, 17, 28, 0.92), rgba(16, 24, 40, 0.62));
+  border: 1px solid rgba(139, 155, 176, 0.22);
+  backdrop-filter: blur(14px);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #4B5066;
+.glow-outline {
+  box-shadow:
+    0 0 0 1px rgba(124, 92, 255, 0.42),
+    0 16px 38px rgba(2, 8, 20, 0.55);
 }
 
-/* Focus states for accessibility */
-:focus-visible {
-  outline: 2px solid #A78BFA;
-  outline-offset: 2px;
+.section-anchor {
+  scroll-margin-top: 6rem;
 }
 
-/* Wallet Adapter Styles - Clean, refined */
+@keyframes ripple {
+  from {
+    transform: scale(0);
+    opacity: 0.7;
+  }
+
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 600ms ease-out forwards;
+}
+
+/* Wallet adapter tune-up */
 .wallet-adapter-button-trigger {
-  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%) !important;
-  border: none !important;
-  border-radius: 12px !important;
-  color: #FFFFFF !important;
+  border: 1px solid rgba(124, 92, 255, 0.35) !important;
+  background: linear-gradient(130deg, rgba(124, 92, 255, 0.25), rgba(0, 229, 255, 0.2)) !important;
+  color: #e6edf3 !important;
+  border-radius: 999px !important;
   font-weight: 600 !important;
   font-size: 0.875rem !important;
-  line-height: 1.25rem !important;
-  padding: 0.75rem 1.5rem !important;
+  padding: 0.72rem 1.2rem !important;
   height: auto !important;
-  transition: all 0.2s ease !important;
-  cursor: pointer !important;
-  box-shadow: 0 4px 14px -3px rgba(124, 58, 237, 0.4) !important;
+  box-shadow: 0 0 26px rgba(124, 92, 255, 0.2) !important;
+  transition: all 0.24s ease !important;
 }
 
 .wallet-adapter-button-trigger:hover {
-  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%) !important;
+  border-color: rgba(0, 229, 255, 0.45) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px -3px rgba(124, 58, 237, 0.5) !important;
-}
-
-.wallet-adapter-button-trigger:active {
-  transform: translateY(0) scale(0.98) !important;
-}
-
-.wallet-adapter-button-trigger:disabled {
-  opacity: 0.5 !important;
-  cursor: not-allowed !important;
-  box-shadow: none !important;
-}
-
-.wallet-adapter-modal-wrapper {
-  z-index: 9999 !important;
 }
 
 .wallet-adapter-modal {
-  background: #1A1D26 !important;
-  border: 1px solid #2D3142 !important;
+  background: #0d111c !important;
+  border: 1px solid rgba(139, 155, 176, 0.2) !important;
   border-radius: 20px !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
 }
 
 .wallet-adapter-modal-title {
-  color: #F3F4F6 !important;
-  font-size: 1.25rem !important;
-  font-weight: 600 !important;
+  color: #e6edf3 !important;
+  font-family: 'Space Grotesk', 'Sora', sans-serif !important;
 }
 
 .wallet-adapter-button {
-  background: #242836 !important;
-  border: 1px solid #2D3142 !important;
-  color: #F3F4F6 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  border-radius: 12px !important;
+  background: #121a2a !important;
+  border-color: rgba(139, 155, 176, 0.25) !important;
+  color: #e6edf3 !important;
 }
 
 .wallet-adapter-button:hover {
-  background: #2D3142 !important;
-  border-color: #7C3AED !important;
-}
-
-/* Dropdown styles */
-.dropdown-menu,
-[role="menu"],
-[role="listbox"] {
-  background: #1A1D26 !important;
-  border: 1px solid #2D3142 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
-}
-
-.dropdown-item,
-[role="menuitem"],
-[role="option"] {
-  color: #A1A7B5 !important;
-  transition: all 0.15s ease !important;
-}
-
-.dropdown-item:hover,
-[role="menuitem"]:hover,
-[role="option"]:hover {
-  background: #242836 !important;
-  color: #F3F4F6 !important;
-}
-
-.dropdown-item[aria-selected="true"],
-.dropdown-item.active,
-[role="menuitem"][aria-selected="true"],
-[role="option"][aria-selected="true"] {
-  color: #A78BFA !important;
+  border-color: rgba(124, 92, 255, 0.45) !important;
 }

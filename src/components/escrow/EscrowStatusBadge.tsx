@@ -19,7 +19,7 @@ export function EscrowStatusBadge({ status, className }: EscrowStatusBadgeProps)
       label: 'Released',
     },
     refunded: {
-      variant: 'destructive' as const,
+      variant: 'warning' as const,
       label: 'Refunded',
     },
   };
@@ -32,6 +32,8 @@ export function EscrowStatusBadge({ status, className }: EscrowStatusBadgeProps)
     </Badge>
   );
 }
+
+
 
 
 

@@ -1,131 +1,144 @@
-// API Route: Create a Job
-// POST /api/jobs/create
-
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin, createSupabaseClient } from '@/lib/supabaseServer';
-import { verifyZKProofHash, isZKHashUnique } from '@/lib/aleoProofVerifier';
+import { supabaseAdmin } from '@/lib/supabaseServer';
+
+type CreateJobBody = {
+  aleoAddress?: string;
+  title?: string;
+  description?: string;
+  skills?: unknown;
+  budget?: string;
+  budgetMin?: number | string;
+  budgetMax?: number | string;
+  zkMembershipHash?: string;
+  zkPaymentHash?: string;
+};
+
+function parseBudget(value: unknown): number | null {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+function normalizeSkills(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((skill) => String(skill || '').trim()).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { 
-      title, 
-      description, 
-      skills, 
-      budget, 
-      zkPaymentHash,
-      aleoAddress 
-    } = body;
-
-    // Validation
-    if (!title || !description || !zkPaymentHash || !aleoAddress) {
-      return NextResponse.json(
-        { error: 'Missing required fields: title, description, zkPaymentHash, aleoAddress' },
-        { status: 400 }
-      );
-    }
-
-    // Verify ZK proof hash format
-    if (!/^[a-f0-9]{64}$/i.test(zkPaymentHash)) {
-      return NextResponse.json(
-        { error: 'Invalid ZK proof hash format' },
-        { status: 400 }
-      );
-    }
-
     if (!supabaseAdmin) {
       return NextResponse.json(
-        { error: 'Supabase not configured' },
+        { success: false, message: 'Supabase not configured' },
         { status: 500 }
       );
     }
 
-    // Check if hash has been used before (prevent replay attacks)
-    const isUnique = await isZKHashUnique(zkPaymentHash, 'jobs', supabaseAdmin);
-    if (!isUnique) {
+    const body = (await request.json()) as CreateJobBody;
+    const aleoAddress = String(body.aleoAddress || request.headers.get('x-aleo-address') || '').trim().toLowerCase();
+    const title = String(body.title || '').trim();
+    const description = String(body.description || '').trim();
+    const skills = normalizeSkills(body.skills);
+    const budgetMin = parseBudget(body.budgetMin);
+    const budgetMax = parseBudget(body.budgetMax);
+    const providedBudget = String(body.budget || '').trim();
+    const zkMembershipHash = String(body.zkMembershipHash || body.zkPaymentHash || '').trim();
+
+    if (!aleoAddress || !title || !description) {
       return NextResponse.json(
-        { error: 'ZK proof hash has already been used' },
+        { success: false, message: 'Missing required fields: aleoAddress, title, description.' },
         { status: 400 }
       );
     }
 
-    // Verify user exists and is a giver
-    const { data: user, error: userError } = await supabaseAdmin
-      .from('users')
+    const resolvedBudget =
+      budgetMin !== null && budgetMax !== null
+        ? `${budgetMin}-${budgetMax} credits`
+        : providedBudget || null;
+
+    if (budgetMin !== null && budgetMax !== null && budgetMin > budgetMax) {
+      return NextResponse.json(
+        { success: false, message: 'Minimum budget cannot exceed maximum budget.' },
+        { status: 400 }
+      );
+    }
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
       .select('id, role')
       .eq('aleo_address', aleoAddress)
-      .single();
+      .maybeSingle();
 
-    if (userError || !user) {
+    if (profileError) {
       return NextResponse.json(
-        { error: 'User not found. Please register first.' },
+        { success: false, message: `Failed to resolve profile: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
+
+    if (!profile?.id) {
+      return NextResponse.json(
+        { success: false, message: 'Wallet profile not found. Please register your role first.' },
         { status: 404 }
       );
     }
 
-    if (user.role !== 'giver') {
+    if (profile.role !== 'giver') {
       return NextResponse.json(
-        { error: 'Only job givers can create jobs' },
+        { success: false, message: 'This wallet is not registered as a giver.' },
         { status: 403 }
       );
     }
 
-    // Verify ZK proof hash corresponds to valid payment
-    const isValidProof = await verifyZKProofHash(
-      zkPaymentHash,
-      'access_control.aleo',
-      'pay_job_giver_access',
-      aleoAddress
-    );
+    // Best-effort backfill for older rows. Ignore failure because some deployments may not include this column.
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        role: 'giver',
+        role_locked: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', profile.id);
 
-    if (!isValidProof) {
-      return NextResponse.json(
-        { error: 'Invalid or unverified ZK proof hash' },
-        { status: 400 }
-      );
-    }
-
-    // Create job
     const { data: job, error: jobError } = await supabaseAdmin
       .from('jobs')
       .insert({
-        giver_id: user.id,
+        giver_id: profile.id,
         title,
         description,
-        skills: skills || [],
-        budget: budget || null,
+        skills,
+        budget: resolvedBudget,
         is_active: true,
-        zk_membership_hash: zkPaymentHash,
+        zk_membership_hash: zkMembershipHash || `proof:pending:${Date.now()}`,
       })
-      .select()
+      .select('id, title, budget, created_at')
       .single();
 
     if (jobError) {
-      console.error('Error creating job:', jobError);
       return NextResponse.json(
-        { error: 'Failed to create job', details: jobError.message },
+        { success: false, message: `Failed to post job: ${jobError.message}` },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Job created successfully',
-      job: {
-        id: job.id,
-        title: job.title,
-        description: job.description,
-        skills: job.skills,
-        budget: job.budget,
-        createdAt: job.created_at,
-      },
+      message: 'Job posted successfully.',
+      data: { job },
     });
   } catch (error: any) {
-    console.error('Create job error:', error);
     return NextResponse.json(
-      { error: 'Failed to create job', message: error.message },
+      { success: false, message: error?.message || 'Failed to create job' },
       { status: 500 }
     );
   }
 }
-

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, LogOut, ChevronDown, Wallet as WalletIcon } from 'lucide-react';
 
 export function ConnectWalletButton() {
-    const { address, disconnect, connected } = useWallet();
+    const { address, disconnect, connected, connecting, error: walletError, connect } = useWallet();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -43,9 +43,27 @@ export function ConnectWalletButton() {
         }
     }, [isDropdownOpen]);
 
+    // Log wallet errors for debugging
+    useEffect(() => {
+        if (walletError) {
+            console.error('Wallet connection error:', walletError);
+        }
+    }, [walletError]);
+
     // If not connected, use the built-in WalletMultiButton with custom styling
     if (!connected || !address) {
-        return <WalletMultiButton className="wallet-adapter-button-trigger" />;
+        return (
+            <div className="relative">
+                <WalletMultiButton className="wallet-adapter-button-trigger" />
+                {walletError && (
+                    <div className="absolute top-full left-0 mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-400 max-w-xs z-50">
+                        <p className="font-medium">Connection Error</p>
+                        <p className="text-red-300">{walletError.message || String(walletError)}</p>
+                        <p className="text-red-400/70 mt-1">Please try again or check if your wallet extension is installed.</p>
+                    </div>
+                )}
+            </div>
+        );
     }
 
     // Connected state with polished custom dropdown

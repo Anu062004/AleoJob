@@ -1,0 +1,280 @@
+Aleo deployment report - Fri Feb 13 17:05:21 UTC 2026
+Network: testnet
+Endpoint: https://api.explorer.provable.com/v1
+
+access_control: FAILED
+📢 Loading environment variables from a `.env` file in the directory tree.
+  - NEXT_PUBLIC_BACKEND_URL=https://aleojob.onrender.com
+  - NEXT_PUBLIC_SUPABASE_URL=https://qzhstrsehwdxmnurjulf.supabase.co
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNDczMzYsImV4cCI6MjA4NDkyMzMzNn0.U2ThGfH5FyRsqH-MtAGWWRMGwvXSgg3y2ESwOFtzEbQ
+  - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTM0NzMzNiwiZXhwIjoyMDg0OTIzMzM2fQ.pLZqwg025QdYnZfrrBv22D27Xc-tLYSFVNBJvR0-D_Y
+  - ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_ENDPOINT=https://api.provable.com/v2/testnet
+  - NEXT_PUBLIC_ALEO_RPC_URL=https://api.provable.com/v2/testnet
+  - ALEO_RPC_ENDPOINTS=https://api.provable.com/v2/testnet,https://testnetbeta.aleorpc.com,https://api.explorer.aleo.org/v1/testnet
+       Leo     10 statements before dead code elimination.
+       Leo     10 statements after dead code elimination.
+       Leo     The program checksum is: '[191u8, 207u8, 24u8, 172u8, 31u8, 253u8, 215u8, 28u8, 9u8, 198u8, 128u8, 251u8, 121u8, 134u8, 67u8, 197u8, 255u8, 108u8, 126u8, 60u8, 10u8, 71u8, 36u8, 243u8, 147u8, 112u8, 209u8, 187u8, 37u8, 63u8, 219u8, 66u8]'.
+       Leo     Program size: 0.62 KB / 97.66 KB
+       Leo ✅ Compiled 'access_control.aleo' into Aleo instructions.
+
+📢 Using the following consensus heights: 0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000
+  To override, pass in `--consensus-heights` or override the environment variable `CONSENSUS_VERSION_HEIGHTS`.
+
+Attempting to determine the consensus version from the latest block height at https://api.explorer.provable.com/v1...
+
+🛠️  Deployment Plan Summary
+──────────────────────────────────────────────
+🔧 Configuration:
+  Private Key:        APrivateKey1zkp8xH3uujgA...
+  Address:            aleo1xwnxpweqy9ktwj65sj3...
+  Endpoint:           https://api.explorer.provable.com/v1
+  Network:            testnet
+  Consensus Version:  12
+
+📦 Deployment Tasks:
+  • access_control.aleo  │ priority fee: 0  │ fee record: no (public fee)
+
+⚙️ Actions:
+  • Transaction(s) will NOT be printed to the console.
+  • Transaction(s) will NOT be saved to a file.
+  • Transaction(s) will be broadcast to https://api.explorer.provable.com/v1
+
+⚠️ Warnings:
+  • The program 'access_control.aleo' already exists on the network. Please use `leo upgrade` instead.
+  • The program 'access_control.aleo' does not contain a constructor. The deployment will likely fail
+──────────────────────────────────────────────
+
+📦 Creating deployment transaction for 'access_control.aleo'...
+
+
+📊 Deployment Summary for access_control.aleo
+──────────────────────────────────────────────
+  Program Size:         0.62 KB / 97.66 KB
+  Total Variables:      70,275
+  Total Constraints:    52,521
+  Max Variables:        2,097,152
+  Max Constraints:      2,097,152
+
+💰 Cost Breakdown (credits)
+  Transaction Storage:  1.888000
+  Program Synthesis:    0.122796
+  Namespace:            1.000000
+  Constructor:          0.000000
+  Priority Fee:         0.000000
+  Total Fee:            3.010796
+──────────────────────────────────────────────
+
+📡 Broadcasting deployment for access_control.aleo...
+💰Your current public balance is 36.28073 credits.
+
+Error [ECLI0377032]: Failed to broadcast transaction: http status: 500
+
+reputation: FAILED
+📢 Loading environment variables from a `.env` file in the directory tree.
+  - NEXT_PUBLIC_BACKEND_URL=https://aleojob.onrender.com
+  - NEXT_PUBLIC_SUPABASE_URL=https://qzhstrsehwdxmnurjulf.supabase.co
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNDczMzYsImV4cCI6MjA4NDkyMzMzNn0.U2ThGfH5FyRsqH-MtAGWWRMGwvXSgg3y2ESwOFtzEbQ
+  - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTM0NzMzNiwiZXhwIjoyMDg0OTIzMzM2fQ.pLZqwg025QdYnZfrrBv22D27Xc-tLYSFVNBJvR0-D_Y
+  - ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_ENDPOINT=https://api.provable.com/v2/testnet
+  - NEXT_PUBLIC_ALEO_RPC_URL=https://api.provable.com/v2/testnet
+  - ALEO_RPC_ENDPOINTS=https://api.provable.com/v2/testnet,https://testnetbeta.aleorpc.com,https://api.explorer.aleo.org/v1/testnet
+       Leo     29 statements before dead code elimination.
+       Leo     29 statements after dead code elimination.
+       Leo     The program checksum is: '[67u8, 62u8, 4u8, 255u8, 169u8, 199u8, 190u8, 227u8, 51u8, 197u8, 141u8, 193u8, 193u8, 51u8, 217u8, 232u8, 189u8, 56u8, 72u8, 157u8, 178u8, 181u8, 14u8, 171u8, 176u8, 181u8, 10u8, 152u8, 7u8, 166u8, 95u8, 237u8]'.
+       Leo     Program size: 1.17 KB / 97.66 KB
+       Leo ✅ Compiled 'reputation.aleo' into Aleo instructions.
+
+📢 Using the following consensus heights: 0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000
+  To override, pass in `--consensus-heights` or override the environment variable `CONSENSUS_VERSION_HEIGHTS`.
+
+Attempting to determine the consensus version from the latest block height at https://api.explorer.provable.com/v1...
+
+🛠️  Deployment Plan Summary
+──────────────────────────────────────────────
+🔧 Configuration:
+  Private Key:        APrivateKey1zkp8xH3uujgA...
+  Address:            aleo1xwnxpweqy9ktwj65sj3...
+  Endpoint:           https://api.explorer.provable.com/v1
+  Network:            testnet
+  Consensus Version:  12
+
+📦 Deployment Tasks:
+  • reputation.aleo  │ priority fee: 0  │ fee record: no (public fee)
+
+⚙️ Actions:
+  • Transaction(s) will NOT be printed to the console.
+  • Transaction(s) will NOT be saved to a file.
+  • Transaction(s) will be broadcast to https://api.explorer.provable.com/v1
+
+⚠️ Warnings:
+  • The program 'reputation.aleo' already exists on the network. Please use `leo upgrade` instead.
+  • The program 'reputation.aleo' does not contain a constructor. The deployment will likely fail
+──────────────────────────────────────────────
+
+📦 Creating deployment transaction for 'reputation.aleo'...
+
+
+📊 Deployment Summary for reputation.aleo
+──────────────────────────────────────────────
+  Program Size:         1.17 KB / 97.66 KB
+  Total Variables:      132,119
+  Total Constraints:    99,506
+  Max Variables:        2,097,152
+  Max Constraints:      2,097,152
+
+💰 Cost Breakdown (credits)
+  Transaction Storage:  2.287000
+  Program Synthesis:    0.231625
+  Namespace:            1.000000
+  Constructor:          0.000000
+  Priority Fee:         0.000000
+  Total Fee:            3.518625
+──────────────────────────────────────────────
+
+📡 Broadcasting deployment for reputation.aleo...
+💰Your current public balance is 36.28073 credits.
+
+Error [ECLI0377032]: Failed to broadcast transaction: http status: 500
+
+job_registry: FAILED
+📢 Loading environment variables from a `.env` file in the directory tree.
+  - NEXT_PUBLIC_BACKEND_URL=https://aleojob.onrender.com
+  - NEXT_PUBLIC_SUPABASE_URL=https://qzhstrsehwdxmnurjulf.supabase.co
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNDczMzYsImV4cCI6MjA4NDkyMzMzNn0.U2ThGfH5FyRsqH-MtAGWWRMGwvXSgg3y2ESwOFtzEbQ
+  - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTM0NzMzNiwiZXhwIjoyMDg0OTIzMzM2fQ.pLZqwg025QdYnZfrrBv22D27Xc-tLYSFVNBJvR0-D_Y
+  - ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_ENDPOINT=https://api.provable.com/v2/testnet
+  - NEXT_PUBLIC_ALEO_RPC_URL=https://api.provable.com/v2/testnet
+  - ALEO_RPC_ENDPOINTS=https://api.provable.com/v2/testnet,https://testnetbeta.aleorpc.com,https://api.explorer.aleo.org/v1/testnet
+       Leo     40 statements before dead code elimination.
+       Leo     40 statements after dead code elimination.
+       Leo     The program checksum is: '[233u8, 39u8, 137u8, 88u8, 173u8, 62u8, 44u8, 229u8, 72u8, 60u8, 174u8, 135u8, 194u8, 122u8, 207u8, 176u8, 20u8, 19u8, 31u8, 158u8, 188u8, 80u8, 157u8, 188u8, 208u8, 7u8, 30u8, 254u8, 225u8, 62u8, 37u8, 124u8]'.
+       Leo     Program size: 1.62 KB / 97.66 KB
+       Leo ✅ Compiled 'job_registry.aleo' into Aleo instructions.
+
+📢 Using the following consensus heights: 0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000
+  To override, pass in `--consensus-heights` or override the environment variable `CONSENSUS_VERSION_HEIGHTS`.
+
+Attempting to determine the consensus version from the latest block height at https://api.explorer.provable.com/v1...
+
+🛠️  Deployment Plan Summary
+──────────────────────────────────────────────
+🔧 Configuration:
+  Private Key:        APrivateKey1zkp8xH3uujgA...
+  Address:            aleo1xwnxpweqy9ktwj65sj3...
+  Endpoint:           https://api.explorer.provable.com/v1
+  Network:            testnet
+  Consensus Version:  12
+
+📦 Deployment Tasks:
+  • job_registry.aleo  │ priority fee: 0  │ fee record: no (public fee)
+
+⚙️ Actions:
+  • Transaction(s) will NOT be printed to the console.
+  • Transaction(s) will NOT be saved to a file.
+  • Transaction(s) will be broadcast to https://api.explorer.provable.com/v1
+
+⚠️ Warnings:
+  • The program 'job_registry.aleo' already exists on the network. Please use `leo upgrade` instead.
+  • The program 'job_registry.aleo' does not contain a constructor. The deployment will likely fail
+──────────────────────────────────────────────
+
+📦 Creating deployment transaction for 'job_registry.aleo'...
+
+
+📊 Deployment Summary for job_registry.aleo
+──────────────────────────────────────────────
+  Program Size:         1.62 KB / 97.66 KB
+  Total Variables:      213,266
+  Total Constraints:    165,195
+  Max Variables:        2,097,152
+  Max Constraints:      2,097,152
+
+💰 Cost Breakdown (credits)
+  Transaction Storage:  3.137000
+  Program Synthesis:    0.378461
+  Namespace:            1.000000
+  Constructor:          0.000000
+  Priority Fee:         0.000000
+  Total Fee:            4.515461
+──────────────────────────────────────────────
+
+📡 Broadcasting deployment for job_registry.aleo...
+💰Your current public balance is 36.28073 credits.
+
+Error [ECLI0377032]: Failed to broadcast transaction: http status: 500
+
+escrow: FAILED
+📢 Loading environment variables from a `.env` file in the directory tree.
+  - NEXT_PUBLIC_BACKEND_URL=https://aleojob.onrender.com
+  - NEXT_PUBLIC_SUPABASE_URL=https://qzhstrsehwdxmnurjulf.supabase.co
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNDczMzYsImV4cCI6MjA4NDkyMzMzNn0.U2ThGfH5FyRsqH-MtAGWWRMGwvXSgg3y2ESwOFtzEbQ
+  - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aHN0cnNlaHdkeG1udXJqdWxmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTM0NzMzNiwiZXhwIjoyMDg0OTIzMzM2fQ.pLZqwg025QdYnZfrrBv22D27Xc-tLYSFVNBJvR0-D_Y
+  - ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_NETWORK=testnet
+  - NEXT_PUBLIC_ALEO_ENDPOINT=https://api.provable.com/v2/testnet
+  - NEXT_PUBLIC_ALEO_RPC_URL=https://api.provable.com/v2/testnet
+  - ALEO_RPC_ENDPOINTS=https://api.provable.com/v2/testnet,https://testnetbeta.aleorpc.com,https://api.explorer.aleo.org/v1/testnet
+       Leo     40 statements before dead code elimination.
+       Leo     40 statements after dead code elimination.
+       Leo     The program checksum is: '[36u8, 214u8, 73u8, 111u8, 129u8, 151u8, 226u8, 32u8, 60u8, 108u8, 147u8, 233u8, 119u8, 58u8, 98u8, 238u8, 71u8, 174u8, 113u8, 135u8, 155u8, 144u8, 244u8, 249u8, 33u8, 118u8, 132u8, 217u8, 8u8, 58u8, 159u8, 115u8]'.
+       Leo     Program size: 1.38 KB / 97.66 KB
+       Leo ✅ Compiled 'job_marketplace_escrow_engine.aleo' into Aleo instructions.
+
+📢 Using the following consensus heights: 0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000
+  To override, pass in `--consensus-heights` or override the environment variable `CONSENSUS_VERSION_HEIGHTS`.
+
+Attempting to determine the consensus version from the latest block height at https://api.explorer.provable.com/v1...
+
+🛠️  Deployment Plan Summary
+──────────────────────────────────────────────
+🔧 Configuration:
+  Private Key:        APrivateKey1zkp8xH3uujgA...
+  Address:            aleo1xwnxpweqy9ktwj65sj3...
+  Endpoint:           https://api.explorer.provable.com/v1
+  Network:            testnet
+  Consensus Version:  12
+
+📦 Deployment Tasks:
+  • job_marketplace_escrow_engine.aleo  │ priority fee: 0  │ fee record: no (public fee)
+
+⚙️ Actions:
+  • Transaction(s) will NOT be printed to the console.
+  • Transaction(s) will NOT be saved to a file.
+  • Transaction(s) will be broadcast to https://api.explorer.provable.com/v1
+
+⚠️ Warnings:
+  • The program 'job_marketplace_escrow_engine.aleo' already exists on the network. Please use `leo upgrade` instead.
+  • The program 'job_marketplace_escrow_engine.aleo' does not contain a constructor. The deployment will likely fail
+──────────────────────────────────────────────
+
+📦 Creating deployment transaction for 'job_marketplace_escrow_engine.aleo'...
+
+
+📊 Deployment Summary for job_marketplace_escrow_engine.aleo
+──────────────────────────────────────────────
+  Program Size:         1.38 KB / 97.66 KB
+  Total Variables:      214,190
+  Total Constraints:    171,048
+  Max Variables:        2,097,152
+  Max Constraints:      2,097,152
+
+💰 Cost Breakdown (credits)
+  Transaction Storage:  3.026000
+  Program Synthesis:    0.385238
+  Namespace:            1.000000
+  Constructor:          0.000000
+  Priority Fee:         0.000000
+  Total Fee:            4.411238
+──────────────────────────────────────────────
+
+📡 Broadcasting deployment for job_marketplace_escrow_engine.aleo...
+💰Your current public balance is 36.28073 credits.
+
+Error [ECLI0377032]: Failed to broadcast transaction: http status: 500
+

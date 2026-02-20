@@ -1,8 +1,8 @@
 // Escrow Service Layer
 // Handles all escrow business logic with proper validation and error handling
 
-import { supabaseAdmin } from '@/lib/supabaseServer';
-import { aleoService } from '@/lib/aleo-service';
+import { supabaseAdmin } from './supabaseServer';
+import { aleoService } from './aleo-service';
 
 export interface EscrowReleaseResult {
   success: boolean;
@@ -98,17 +98,39 @@ export async function releaseEscrow(
       };
     }
 
-    // 7. Call Aleo smart contract transition: release_payment
-    // Note: The escrow_record_id should be the PaymentEscrow record
-    // For now, we pass it as-is. In production, you'd fetch the actual record from Aleo
-    const completionProof = '0field'; // Proof that job is complete (can be enhanced later)
-    
+    // 7. Validate seeker work proof has been verified by giver workflow
+    const { data: acceptedApplication, error: applicationError } = await supabaseAdmin
+      .from('applications')
+      .select('id, work_proof_status, work_proof_hash')
+      .eq('job_id', escrow.job_id)
+      .eq('seeker_id', escrow.freelancer_id)
+      .eq('status', 'accepted')
+      .maybeSingle();
+
+    if (applicationError || !acceptedApplication) {
+      return {
+        success: false,
+        error: 'Accepted application not found for this escrow.',
+      };
+    }
+
+    if (acceptedApplication.work_proof_status !== 'verified' || !acceptedApplication.work_proof_hash) {
+      return {
+        success: false,
+        error: 'Cannot release escrow before seeker proof of work is verified.',
+      };
+    }
+
+    // 8. Call Aleo smart contract transition: release_payment with verified proof hash
+    const completionProof = String(acceptedApplication.work_proof_hash);
+
     const releaseResult = await aleoService.releaseEscrow(
       escrow.escrow_record_id,
-      employerPrivateKey
+      employerPrivateKey,
+      completionProof
     );
 
-    // 8. If blockchain call fails, DO NOT update database
+    // 9. If blockchain call fails, DO NOT update database
     if (!releaseResult.success) {
       return {
         success: false,
@@ -116,7 +138,7 @@ export async function releaseEscrow(
       };
     }
 
-    // 9. Update database in transaction
+    // 10. Update database in transaction
     // Update escrow status
     const { error: escrowUpdateError } = await supabaseAdmin
       .from('escrows')
@@ -146,7 +168,7 @@ export async function releaseEscrow(
       // Log but don't fail - escrow is already released on blockchain
     }
 
-    // 10. Log transaction
+    // 11. Log transaction
     console.log(`[Escrow Release] Escrow ${escrowId} released. TX: ${releaseResult.transactionId}`);
 
     return {
@@ -315,6 +337,8 @@ export async function refundEscrow(
     };
   }
 }
+
+
 
 
 

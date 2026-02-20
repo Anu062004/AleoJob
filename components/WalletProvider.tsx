@@ -19,12 +19,43 @@ interface WalletProviderProps {
 
 export function WalletProvider({ children }: WalletProviderProps) {
   const wallets = useMemo(
-    () => [
-      new ShieldWalletAdapter(),
-      new PuzzleWalletAdapter(),
-      new LeoWalletAdapter(),
-      new FoxWalletAdapter(),
-    ],
+    () => {
+      const walletAdapters = [];
+      
+      // Initialize wallet adapters - they should handle their own availability checks
+      // The order matters - most commonly used wallets first
+      try {
+        walletAdapters.push(new LeoWalletAdapter());
+      } catch (e) {
+        console.warn('LeoWalletAdapter initialization failed:', e);
+      }
+      
+      try {
+        walletAdapters.push(new PuzzleWalletAdapter());
+      } catch (e) {
+        console.warn('PuzzleWalletAdapter initialization failed:', e);
+      }
+      
+      try {
+        walletAdapters.push(new ShieldWalletAdapter());
+      } catch (e) {
+        console.warn('ShieldWalletAdapter initialization failed:', e);
+      }
+      
+      try {
+        walletAdapters.push(new FoxWalletAdapter());
+      } catch (e) {
+        console.warn('FoxWalletAdapter initialization failed:', e);
+      }
+      
+      if (walletAdapters.length === 0) {
+        console.error('No wallet adapters could be initialized');
+      } else {
+        console.log(`Initialized ${walletAdapters.length} wallet adapter(s)`);
+      }
+      
+      return walletAdapters;
+    },
     []
   );
 
@@ -42,11 +73,29 @@ export function WalletProvider({ children }: WalletProviderProps) {
   return (
     <AleoWalletProvider
       wallets={wallets}
-      autoConnect={true}
+      autoConnect={false}
       network={Network.TESTNET3}
       decryptPermission={DecryptPermission.UponRequest}
       programs={programs}
-      onError={(error) => console.error('Wallet error:', error.message)}
+      onError={(error) => {
+        console.error('Wallet error:', error);
+        // Log more details for debugging
+        if (error instanceof Error) {
+          console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+          });
+        }
+        // Check for specific connection errors
+        if (error && typeof error === 'object' && 'message' in error) {
+          const errorMessage = String(error.message);
+          if (errorMessage.includes('No address returned') || errorMessage.includes('WalletConnectionError')) {
+            console.error('Wallet connection failed - wallet may not be installed or may need user approval');
+            console.error('Available wallets:', wallets.map(w => w.name));
+          }
+        }
+      }}
     >
       <WalletModalProvider>{children}</WalletModalProvider>
     </AleoWalletProvider>

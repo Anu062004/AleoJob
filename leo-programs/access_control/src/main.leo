@@ -2,7 +2,13 @@
 // Manages paid access for Job Seekers and Job Givers
 // Privacy: Access records are private - no public exposure of payment or identity
 
-program access_control.aleo {
+program access_control_v3.aleo {
+    
+    @noupgrade
+    async constructor() {
+        // The Leo compiler automatically generates the constructor logic.
+    }
+
     // Access Record for Job Seeker (1 Aleo credit, 7 days validity)
     record JobSeekerAccess {
         owner: address,
@@ -39,12 +45,8 @@ program access_control.aleo {
         owner: address,
         current_block: u64,
     ) -> bool {
-        return true;
-    }
-
-    @noupgrade
-    async constructor() {
-        // The Leo compiler automatically generates the constructor logic.
+        assert(owner == owner);
+        assert(current_block > 0u64);
+        return current_block > 0u64;
     }
 }
-

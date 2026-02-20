@@ -1,15 +1,16 @@
 {
-  "program": "job_marketplace_escrow_engine.aleo",
-  "version": "0.1.0",
-  "description": "Manages payment escrow for job completion",
+  "program": "escrow_v4.aleo",
+  "version": "0.2.0",
+  "description": "Escrow v4 reimplementation with strict lock/release/refund invariants",
   "license": "MIT",
-  "dependencies": null,
+  "leo": "3.4.0",
+  "dependencies": [
+    {
+      "name": "credits.aleo",
+      "location": "network",
+      "path": null,
+      "edition": null
+    }
+  ],
   "dev_dependencies": null
 }
-
-
-
-
-
-
-

@@ -1,149 +1,234 @@
-import { Link } from 'react-router-dom';
-import { Shield, Lock, TrendingUp, Wallet, ArrowRight } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Activity, Lock, ShieldCheck, UserRoundCheck } from 'lucide-react';
+import { Hero } from '@/components/web3/Hero';
+import { JobCard } from '@/components/web3/JobCard';
+import { ReputationCard } from '@/components/web3/ReputationCard';
+import { EmptyState } from '@/components/web3/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { supabase } from '@/lib/supabaseClient';
+import { OpportunityJob, ReputationEntry } from '@/components/web3/types';
+
+const privacyReasons = [
+  {
+    icon: Lock,
+    title: 'Identity stays private',
+    description: 'Operate under pseudonymous addresses while preserving professional continuity.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Proofs replace paperwork',
+    description: 'Zero-knowledge attestations verify capability without exposing raw documents.',
+  },
+  {
+    icon: Activity,
+    title: 'Escrow enforces trust',
+    description: 'Funds lock on-chain and release only when the protocol validates completion.',
+  },
+];
 
 function Home() {
-    return (
-        <div className="min-h-screen">
-            {/* Hero */}
-            <section className="py-24 md:py-32">
-                <div className="container mx-auto px-6 max-w-4xl">
-                    <div className="text-center">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-sm font-medium mb-8">
-                            <Shield size={14} />
-                            Built on Aleo
-                        </div>
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [jobs, setJobs] = useState<OpportunityJob[]>([]);
+  const [leaderboard, setLeaderboard] = useState<ReputationEntry[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
 
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white leading-tight tracking-tight mb-6">
-                            Private work.
-                            <br />
-                            <span className="text-slate-400">Verified reputation.</span>
-                        </h1>
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [{ data: jobsData, error: jobsError }, { data: profilesData, error: profilesError }] = await Promise.all([
+          supabase
+            .from('jobs')
+            .select('id, title, description, skills, budget, created_at')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(6),
+          supabase
+            .from('profiles')
+            .select('id, aleo_address, profile_score, completed_jobs, jobs_posted, role')
+            .order('profile_score', { ascending: false })
+            .limit(5),
+        ]);
 
-                        <p className="text-lg text-slate-400 mb-10 max-w-xl mx-auto leading-relaxed">
-                            A job marketplace where you work and earn without exposing your identity.
-                            Zero-knowledge proofs handle verification.
-                        </p>
+        if (!jobsError && jobsData) {
+          setJobs(
+            jobsData.map((job: any) => ({
+              id: job.id,
+              title: job.title,
+              summary: job.description,
+              skills: job.skills || [],
+              budget: job.budget,
+              zkVerified: true,
+              createdAt: job.created_at,
+            }))
+          );
+        }
 
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <Link to="/get-started">
-                                <Button variant="primary" size="lg">
-                                    Get Started
-                                    <ArrowRight className="ml-2" size={16} />
-                                </Button>
-                            </Link>
-                            <Link to="/jobs">
-                                <Button variant="secondary" size="lg">
-                                    Browse Jobs
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        if (!profilesError && profilesData) {
+          setLeaderboard(
+            profilesData.map((profile: any, index: number) => ({
+              id: profile.id,
+              alias: `Anonymous #${index + 1}`,
+              address: profile.aleo_address || 'aleo1unknown',
+              score: profile.profile_score || 0,
+              proofCount: Math.max(1, profile.role === 'giver' ? profile.jobs_posted || 0 : profile.completed_jobs || 0),
+              role: profile.role === 'giver' ? 'giver' : 'seeker',
+            }))
+          );
+        }
+      } finally {
+        setLoadingJobs(false);
+      }
+    };
 
-            {/* How it works */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container mx-auto px-6 max-w-5xl">
-                    <div className="text-center mb-16">
-                        <h2 className="text-2xl font-semibold text-white mb-3">How it works</h2>
-                        <p className="text-slate-500">Four steps to private employment</p>
-                    </div>
+    loadData();
+  }, []);
 
-                    <div className="grid md:grid-cols-4 gap-px bg-slate-800 rounded-2xl overflow-hidden">
-                        {[
-                            { num: '01', title: 'Connect', desc: 'Link your Aleo wallet' },
-                            { num: '02', title: 'Prove', desc: 'Generate ZK credentials' },
-                            { num: '03', title: 'Work', desc: 'Match and complete jobs' },
-                            { num: '04', title: 'Earn', desc: 'Get paid via escrow' },
-                        ].map((step) => (
-                            <div key={step.num} className="bg-slate-900 p-6 md:p-8">
-                                <div className="text-violet-500 font-mono text-xs mb-4">{step.num}</div>
-                                <h3 className="text-white font-medium mb-1">{step.title}</h3>
-                                <p className="text-slate-500 text-sm">{step.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+  const filteredJobs = useMemo(() => {
+    if (!query.trim()) return jobs;
+    const term = query.toLowerCase();
+    return jobs.filter((job) => {
+      return (
+        job.title.toLowerCase().includes(term) ||
+        job.summary.toLowerCase().includes(term) ||
+        job.skills.some((skill) => skill.toLowerCase().includes(term))
+      );
+    });
+  }, [jobs, query]);
 
-            {/* Features */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container mx-auto px-6 max-w-5xl">
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {[
-                            {
-                                icon: Shield,
-                                title: 'Zero-Knowledge Identity',
-                                desc: 'Prove qualifications without revealing personal data.'
-                            },
-                            {
-                                icon: TrendingUp,
-                                title: 'Verifiable Reputation',
-                                desc: 'Build trust through on-chain job completions.'
-                            },
-                            {
-                                icon: Lock,
-                                title: 'Escrow Payments',
-                                desc: 'Funds held securely until verified completion.'
-                            },
-                            {
-                                icon: Wallet,
-                                title: 'Simple Pricing',
-                                desc: 'Seekers: 1 credit. Givers: 3 credits.'
-                            },
-                        ].map((feature) => {
-                            const Icon = feature.icon;
-                            return (
-                                <div key={feature.title} className="flex gap-4 p-6 rounded-xl bg-slate-900/50 border border-slate-800">
-                                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center">
-                                        <Icon size={18} className="text-violet-400" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-white font-medium mb-1">{feature.title}</h3>
-                                        <p className="text-slate-500 text-sm">{feature.desc}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </section>
+  return (
+    <div className="protocol-shell">
+      <Hero />
 
-            {/* CTA */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-2xl font-semibold text-white mb-3">Ready to start?</h2>
-                    <p className="text-slate-500 mb-8">Connect your wallet and begin.</p>
-                    <Link to="/get-started">
-                        <Button variant="primary" size="lg">
-                            Get Started
-                            <ArrowRight className="ml-2" size={16} />
-                        </Button>
-                    </Link>
-                </div>
-            </section>
-
-            {/* Footer */}
-            <footer className="border-t border-slate-800 py-8">
-                <div className="container mx-auto px-6">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-violet-600 rounded flex items-center justify-center">
-                                <Shield size={12} className="text-white" />
-                            </div>
-                            <span className="font-medium text-white text-sm">AleoJob</span>
-                        </div>
-                        <div className="flex gap-6 text-sm text-slate-500">
-                            <Link to="/jobs" className="hover:text-white transition-colors">Jobs</Link>
-                            <Link to="/leaderboard" className="hover:text-white transition-colors">Leaderboard</Link>
-                            <a href="https://aleo.org" target="_blank" rel="noopener" className="hover:text-white transition-colors">Aleo</a>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+      <section id="privacy" className="section-anchor mx-auto max-w-7xl px-4 py-16 md:px-6">
+        <div className="mb-10 text-center">
+          <p className="text-xs uppercase tracking-[0.2em] text-brand-secondary">Why Privacy Matters</p>
+          <h2 className="mt-3 text-3xl font-semibold text-brand-text">Trustless hiring, privacy-first by design.</h2>
         </div>
-    );
+        <div className="grid gap-4 md:grid-cols-3">
+          {privacyReasons.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <motion.article
+                key={item.title}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.06 }}
+                className="glass-card rounded-2xl p-5"
+              >
+                <div className="mb-4 inline-flex rounded-xl bg-brand-primary/15 p-2 text-brand-primary">
+                  <Icon size={18} />
+                </div>
+                <h3 className="text-lg font-semibold text-brand-text">{item.title}</h3>
+                <p className="mt-2 text-sm text-brand-text-muted">{item.description}</p>
+              </motion.article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section id="opportunities" className="section-anchor mx-auto max-w-7xl px-4 py-16 md:px-6">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-brand-secondary">Opportunities</p>
+            <h2 className="mt-2 text-3xl font-semibold text-brand-text">Discover active protocol listings.</h2>
+          </div>
+          <Link to="/jobs">
+            <Button variant="secondary">Open Full Marketplace</Button>
+          </Link>
+        </div>
+
+        <div className="mb-5 max-w-md">
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by title, skill, or proof type"
+            className="w-full rounded-2xl border border-brand-border bg-brand-surface px-4 py-3 text-sm text-brand-text outline-none transition-colors focus:border-brand-secondary/60"
+          />
+        </div>
+
+        {loadingJobs ? (
+          <div className="glass-card rounded-2xl p-10 text-center text-brand-text-muted">Syncing opportunities from the ledger...</div>
+        ) : filteredJobs.length === 0 ? (
+          <EmptyState description="No Opportunities Yet — Be the first to interact with the protocol." />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {filteredJobs.map((job) => (
+              <JobCard key={job.id} job={job} canApply onQuickApply={() => navigate('/jobs')} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section id="ledger" className="section-anchor mx-auto max-w-7xl px-4 py-16 md:px-6">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-brand-secondary">Reputation Ledger</p>
+            <h2 className="mt-2 text-3xl font-semibold text-brand-text">Proof-based reputation, not profile theater.</h2>
+          </div>
+          <Link to="/leaderboard">
+            <Button variant="outline">View Full Leaderboard</Button>
+          </Link>
+        </div>
+
+        {leaderboard.length === 0 ? (
+          <EmptyState
+            title="Ledger Warming Up"
+            description="As proofs settle, top contributors will appear here with circular reputation rings."
+          />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {leaderboard.slice(0, 3).map((entry) => (
+              <ReputationCard key={entry.id} entry={entry} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section id="control-panels" className="section-anchor mx-auto max-w-7xl px-4 py-16 md:px-6">
+        <div className="mb-8">
+          <p className="text-xs uppercase tracking-[0.2em] text-brand-secondary">Control Panels</p>
+          <h2 className="mt-2 text-3xl font-semibold text-brand-text">Operate as a seeker or giver with protocol-native dashboards.</h2>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <article className="glass-card rounded-2xl p-6">
+            <div className="mb-3 inline-flex rounded-xl bg-brand-primary/15 p-2 text-brand-primary">
+              <UserRoundCheck size={18} />
+            </div>
+            <h3 className="text-xl font-semibold text-brand-text">Seeker Control Panel</h3>
+            <p className="mt-2 text-sm text-brand-text-muted">
+              Track applications, update verifiable profiles, and monitor escrow-backed payouts.
+            </p>
+            <div className="mt-5">
+              <Link to="/seeker">
+                <Button variant="secondary">Open Seeker Panel</Button>
+              </Link>
+            </div>
+          </article>
+
+          <article className="glass-card rounded-2xl p-6">
+            <div className="mb-3 inline-flex rounded-xl bg-brand-secondary/15 p-2 text-brand-secondary">
+              <ShieldCheck size={18} />
+            </div>
+            <h3 className="text-xl font-semibold text-brand-text">Giver Control Panel</h3>
+            <p className="mt-2 text-sm text-brand-text-muted">
+              Post opportunities, review ZK-verified applicants, and create escrow for accepted matches.
+            </p>
+            <div className="mt-5">
+              <Link to="/giver">
+                <Button variant="secondary">Open Giver Panel</Button>
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export default Home;
+

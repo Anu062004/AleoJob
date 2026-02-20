@@ -11,7 +11,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 2. Create escrows table (only if it doesn't exist)
+-- 2. Ensure profiles table exists before creating escrows FK references.
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  aleo_address TEXT UNIQUE NOT NULL,
+  name TEXT,
+  skills TEXT[] DEFAULT '{}',
+  experience_years INT DEFAULT 0,
+  education_level TEXT,
+  profile_score INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_profiles_aleo_address ON profiles(aleo_address);
+CREATE INDEX IF NOT EXISTS idx_profiles_profile_score ON profiles(profile_score DESC);
+
+-- 3. Create escrows table (only if it doesn't exist)
 CREATE TABLE IF NOT EXISTS escrows (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   job_id UUID REFERENCES jobs(id) ON DELETE CASCADE NOT NULL,
@@ -30,14 +46,14 @@ CREATE TABLE IF NOT EXISTS escrows (
   UNIQUE (job_id)
 );
 
--- 3. Create indexes (only if they don't exist)
+-- 4. Create indexes (only if they don't exist)
 CREATE INDEX IF NOT EXISTS idx_escrows_job_id ON escrows(job_id);
 CREATE INDEX IF NOT EXISTS idx_escrows_employer_id ON escrows(employer_id);
 CREATE INDEX IF NOT EXISTS idx_escrows_freelancer_id ON escrows(freelancer_id);
 CREATE INDEX IF NOT EXISTS idx_escrows_status ON escrows(status);
 CREATE INDEX IF NOT EXISTS idx_escrows_created_at ON escrows(created_at DESC);
 
--- 4. Add payment_status column to jobs table (only if it doesn't exist)
+-- 5. Add payment_status column to jobs table (only if it doesn't exist)
 DO $$ 
 BEGIN
   IF NOT EXISTS (
@@ -49,18 +65,18 @@ BEGIN
   END IF;
 END $$;
 
--- 5. Create index on payment_status (only if it doesn't exist)
+-- 6. Create index on payment_status (only if it doesn't exist)
 CREATE INDEX IF NOT EXISTS idx_jobs_payment_status ON jobs(payment_status);
 
--- 6. Create trigger for auto-updating updated_at (drop and recreate to avoid conflicts)
+-- 7. Create trigger for auto-updating updated_at (drop and recreate to avoid conflicts)
 DROP TRIGGER IF EXISTS update_escrows_updated_at ON escrows;
 CREATE TRIGGER update_escrows_updated_at BEFORE UPDATE ON escrows
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- 7. Enable RLS on escrows table
+-- 8. Enable RLS on escrows table
 ALTER TABLE escrows ENABLE ROW LEVEL SECURITY;
 
--- 8. RLS Policies for escrows table
+-- 9. RLS Policies for escrows table
 -- Allow employers to view their own escrows
 DROP POLICY IF EXISTS "Employers can view own escrows" ON escrows;
 CREATE POLICY "Employers can view own escrows"
@@ -95,10 +111,10 @@ CREATE POLICY "Anyone can update escrows"
 ON escrows FOR UPDATE
 USING (true);
 
--- 9. Add comment
+-- 10. Add comment
 COMMENT ON TABLE escrows IS 'Stores escrow records for job payments on Aleo blockchain';
 
--- 10. Verify the migration
+-- 11. Verify the migration
 DO $$
 BEGIN
   RAISE NOTICE '✅ Escrow table migration completed successfully!';
@@ -107,6 +123,8 @@ BEGIN
   RAISE NOTICE '✅ Indexes created';
   RAISE NOTICE '✅ RLS policies enabled';
 END $$;
+
+
 
 
 

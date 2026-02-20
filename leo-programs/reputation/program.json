@@ -1,15 +1,8 @@
 {
-  "program": "reputation.aleo",
+  "program": "reputation_v3.aleo",
   "version": "0.1.0",
   "description": "Manages private reputation scores for Job Seekers and Job Givers",
   "license": "MIT",
   "dependencies": null,
   "dev_dependencies": null
 }
-
-
-
-
-
-
-

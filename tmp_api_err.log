@@ -1,0 +1,57 @@
+[API] Failed to load access verification routes: Error: spawnSync C:\Program Files\nodejs\node.exe EPERM
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at spawnSync (node:child_process:902:24)
+    at findPort (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:49:26)
+    at start (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:32:16)
+    at sendMessage (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:133:17)
+    at createClient (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:173:27)
+    at Object.<anonymous> (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-request\lib\index.js:16:14)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object.transformer (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1441:32) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawnSync C:\\Program Files\\nodejs\\node.exe',
+  path: 'C:\\Program Files\\nodejs\\node.exe',
+  spawnargs: [
+    'C:\\Users\\ankur\\OneDrive\\Desktop\\AleoAleo\\node_modules\\sync-rpc\\lib\\find-port.js'
+  ]
+}
+[Jobs] Failed to start background jobs: Error: spawnSync C:\Program Files\nodejs\node.exe EPERM
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at spawnSync (node:child_process:902:24)
+    at findPort (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:49:26)
+    at start (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:32:16)
+    at sendMessage (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:133:17)
+    at createClient (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:173:27)
+    at Object.<anonymous> (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-request\lib\index.js:16:14)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object.transformer (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1441:32) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawnSync C:\\Program Files\\nodejs\\node.exe',
+  path: 'C:\\Program Files\\nodejs\\node.exe',
+  spawnargs: [
+    'C:\\Users\\ankur\\OneDrive\\Desktop\\AleoAleo\\node_modules\\sync-rpc\\lib\\find-port.js'
+  ]
+}
+[Jobs] Failed to start transaction reconciliation: Error: spawnSync C:\Program Files\nodejs\node.exe EPERM
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at spawnSync (node:child_process:902:24)
+    at findPort (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:49:26)
+    at start (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:32:16)
+    at sendMessage (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:133:17)
+    at createClient (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-rpc\lib\index.js:173:27)
+    at Object.<anonymous> (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\sync-request\lib\index.js:16:14)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object.transformer (C:\Users\ankur\OneDrive\Desktop\AleoAleo\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1441:32) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawnSync C:\\Program Files\\nodejs\\node.exe',
+  path: 'C:\\Program Files\\nodejs\\node.exe',
+  spawnargs: [
+    'C:\\Users\\ankur\\OneDrive\\Desktop\\AleoAleo\\node_modules\\sync-rpc\\lib\\find-port.js'
+  ]
+}

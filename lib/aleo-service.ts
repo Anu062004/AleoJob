@@ -132,7 +132,7 @@ class AleoService {
         programId,
         functionName,
         inputsCount: inputs.length,
-        inputs: inputs.map((inp, idx) => {
+        inputs: inputs.map((inp) => {
           if (typeof inp === 'string' && inp.length > 50) {
             return `${inp.substring(0, 20)}...${inp.substring(inp.length - 10)}`;
           }
@@ -347,10 +347,20 @@ class AleoService {
   }
 
   // Get transaction status
+  async getTransaction(transactionId: string): Promise<any | null> {
+    try {
+      return await this.getWithFailover<any>(`/transactions/${transactionId}`);
+    } catch (error: any) {
+      console.error('Get transaction error:', error);
+      return null;
+    }
+  }
+
+  // Get transaction status
   async getTransactionStatus(transactionId: string): Promise<string> {
     try {
-      const data = await this.getWithFailover<any>(`/transactions/${transactionId}`);
-      return data?.status || 'unknown';
+      const data = await this.getTransaction(transactionId);
+      return data?.status || data?.transaction?.status || 'unknown';
     } catch (error: any) {
       console.error('Get transaction status error:', error);
       return 'unknown';
@@ -605,21 +615,21 @@ class AleoService {
    */
   async releaseEscrow(
     escrowRecordId: string,
-    employerPrivateKey: string
+    employerPrivateKey: string,
+    completionProof: string
   ): Promise<EscrowResponse> {
     try {
       // The escrowRecordId is the PaymentEscrow record identifier
       // The Aleo SDK will fetch the record from the chain when executing the transition
       const escrowRecord = escrowRecordId;
-
-      // Completion proof - in production, this could be a ZK proof of job completion
-      // For now, we use a placeholder. This can be enhanced with actual proof generation.
-      const completionProof = '0field';
+      const normalizedCompletionProof = completionProof && String(completionProof).trim()
+        ? String(completionProof).trim()
+        : '1field';
 
       const response = await this.executeTransition(
         ALEO_CONFIG.programs.escrow,
         'release_payment',
-        [escrowRecord, completionProof],
+        [escrowRecord, normalizedCompletionProof],
         employerPrivateKey
       );
 
@@ -702,6 +712,9 @@ class AleoService {
     error?: string;
   }> {
     try {
+      // Keep parameter intentional until on-chain record query is implemented.
+      void escrowId;
+
       // In production, you'd fetch the escrow record from Aleo and check its status
       // For now, we'll return a placeholder
       // The actual implementation would:
@@ -753,5 +766,3 @@ class AleoService {
 
 // Export singleton instance
 export const aleoService = new AleoService();
-
-

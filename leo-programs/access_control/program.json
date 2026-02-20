@@ -1,15 +1,8 @@
 {
-  "program": "access_control.aleo",
+  "program": "access_control_v3.aleo",
   "version": "0.1.0",
   "description": "Manages paid access for Job Seekers and Job Givers",
   "license": "MIT",
   "dependencies": null,
   "dev_dependencies": null
 }
-
-
-
-
-
-
-

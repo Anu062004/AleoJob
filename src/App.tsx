@@ -7,6 +7,7 @@ import GetStarted from './pages/GetStarted';
 import RoleSelect from './pages/RoleSelect';
 import Seeker from './pages/Seeker';
 import Giver from './pages/Giver';
+import Ops from './pages/Ops';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 
@@ -21,6 +22,7 @@ function App() {
                 <Route path="role-select" element={<RoleSelect />} />
                 <Route path="seeker" element={<Seeker />} />
                 <Route path="giver" element={<Giver />} />
+                <Route path="ops" element={<Ops />} />
                 <Route path="login/*" element={<Login />} />
                 <Route path="dashboard/*" element={<Dashboard />} />
             </Route>

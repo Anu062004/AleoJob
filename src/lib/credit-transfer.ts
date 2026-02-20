@@ -6,7 +6,76 @@ import { ALEO_CONFIG, ALEO_CREDITS } from '../../lib/aleo-config';
 export interface CreditTransferResult {
   success: boolean;
   transactionId?: string;
+  walletTransactionId?: string;
+  status?: string;
   error?: string;
+}
+
+type WalletTransactionStatusResponse = {
+  status?: string;
+  transactionId?: string;
+} | null | undefined;
+
+type WalletTransactionStatusFn = ((transactionId: string) => Promise<WalletTransactionStatusResponse>) | null | undefined;
+
+const FINAL_FAILURE_STATUSES = new Set(['failed', 'failure', 'rejected', 'aborted', 'error', 'invalid']);
+const FINAL_SUCCESS_STATUSES = new Set(['accepted', 'confirmed', 'finalized', 'completed', 'included', 'success']);
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    globalThis.setTimeout(resolve, ms);
+  });
+}
+
+async function resolveWalletTransactionId(
+  transactionStatus: WalletTransactionStatusFn,
+  walletTransactionId: string
+): Promise<{ transactionId: string; status: string }> {
+  if (!transactionStatus) {
+    return { transactionId: walletTransactionId, status: 'unknown' };
+  }
+
+  let resolvedTransactionId = walletTransactionId;
+  let latestStatus = 'unknown';
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      const statusResponse = await transactionStatus(walletTransactionId);
+      const status = String(statusResponse?.status || '').trim().toLowerCase();
+      const transactionId = String(statusResponse?.transactionId || '').trim();
+
+      if (status) {
+        latestStatus = status;
+      }
+
+      if (transactionId) {
+        resolvedTransactionId = transactionId;
+      }
+
+      if (transactionId && transactionId !== walletTransactionId) {
+        return { transactionId: resolvedTransactionId, status: latestStatus || 'confirmed' };
+      }
+
+      if (FINAL_FAILURE_STATUSES.has(status)) {
+        return { transactionId: resolvedTransactionId, status };
+      }
+
+      if (FINAL_SUCCESS_STATUSES.has(status) && resolvedTransactionId) {
+        return { transactionId: resolvedTransactionId, status };
+      }
+    } catch (error) {
+      console.warn('[credit-transfer] transactionStatus lookup failed:', error);
+    }
+
+    if (attempt < 4) {
+      await sleep(1200);
+    }
+  }
+
+  return {
+    transactionId: resolvedTransactionId,
+    status: latestStatus,
+  };
 }
 
 /**
@@ -18,6 +87,7 @@ export interface CreditTransferResult {
  */
 export async function transferCredits(
   executeTransaction: ((options: any) => Promise<{ transactionId: string } | undefined>) | null | undefined,
+  transactionStatus: WalletTransactionStatusFn,
   address: string,
   isJobGiver: boolean
 ): Promise<CreditTransferResult> {
@@ -47,9 +117,14 @@ export async function transferCredits(
       };
     }
 
+    const walletTransactionId = result.transactionId.trim();
+    const resolved = await resolveWalletTransactionId(transactionStatus, walletTransactionId);
+
     return {
       success: true,
-      transactionId: result.transactionId,
+      transactionId: resolved.transactionId || walletTransactionId,
+      walletTransactionId,
+      status: resolved.status,
     };
   } catch (error: any) {
     console.error('Credit transfer error:', error);
@@ -76,4 +151,3 @@ export async function transferCredits(
     };
   }
 }
-

@@ -2,7 +2,13 @@
 // Manages private reputation scores for Job Seekers and Job Givers
 // Privacy: Reputation changes are private, only final score is derived publicly (if needed)
 
-program reputation.aleo {
+program reputation_v3.aleo {
+    
+    @noupgrade
+    async constructor() {
+        // The Leo compiler automatically generates the constructor logic.
+    }
+
     // Reputation Record for Job Seeker
     record JobSeekerReputation {
         owner: address,
@@ -23,10 +29,15 @@ program reputation.aleo {
         current_reputation: JobSeekerReputation,
         feedback_score: u64, // 0-10
     ) -> JobSeekerReputation {
+        assert(feedback_score <= 10u64);
+        let next_jobs_completed: u64 = current_reputation.jobs_completed + 1u64;
+        let weighted_feedback: u64 = feedback_score * 10u64;
+        let weighted_total: u64 = current_reputation.score * current_reputation.jobs_completed + weighted_feedback;
+        let next_score: u64 = weighted_total / next_jobs_completed;
         return JobSeekerReputation {
             owner: current_reputation.owner,
-            score: current_reputation.score,
-            jobs_completed: current_reputation.jobs_completed + 1u64,
+            score: next_score,
+            jobs_completed: next_jobs_completed,
         };
     }
 
@@ -35,11 +46,15 @@ program reputation.aleo {
         current_reputation: JobGiverReputation,
         increment_completed: u64, // 1u64 if success, 0u64 if not
     ) -> JobGiverReputation {
+        assert(increment_completed <= 1u64);
+        let next_jobs_posted: u64 = current_reputation.jobs_posted + 1u64;
+        let next_jobs_completed: u64 = current_reputation.jobs_completed + increment_completed;
+        let next_score: u64 = (next_jobs_completed * 100u64) / next_jobs_posted;
         return JobGiverReputation {
             owner: current_reputation.owner,
-            score: current_reputation.score,
-            jobs_posted: current_reputation.jobs_posted + 1u64,
-            jobs_completed: current_reputation.jobs_completed + increment_completed,
+            score: next_score,
+            jobs_posted: next_jobs_posted,
+            jobs_completed: next_jobs_completed,
         };
     }
 
@@ -50,10 +65,4 @@ program reputation.aleo {
     ) -> u64 {
         return score;
     }
-
-    @noupgrade
-    async constructor() {
-        // The Leo compiler automatically generates the constructor logic.
-    }
 }
-
