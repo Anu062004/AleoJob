@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
@@ -19,42 +19,32 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #05070f;
-  color: #e6edf3;
-  font-family: 'Space Grotesk', 'Sora', 'Segoe UI', sans-serif;
+  background: #ffffff;
+  color: #111827;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .protocol-shell {
-  background:
-    radial-gradient(circle at 12% 14%, rgba(124, 92, 255, 0.24), transparent 42%),
-    radial-gradient(circle at 86% 12%, rgba(0, 229, 255, 0.2), transparent 45%),
-    linear-gradient(180deg, rgba(5, 7, 15, 1), rgba(5, 7, 15, 0.98));
-}
-
-.protocol-grid {
-  background-image:
-    linear-gradient(rgba(139, 155, 176, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 155, 176, 0.08) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: radial-gradient(circle at center, black 40%, transparent 95%);
+  background: #ffffff;
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(13, 17, 28, 0.92), rgba(16, 24, 40, 0.62));
-  border: 1px solid rgba(139, 155, 176, 0.22);
-  backdrop-filter: blur(14px);
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
 }
 
-.glow-outline {
-  box-shadow:
-    0 0 0 1px rgba(124, 92, 255, 0.42),
-    0 16px 38px rgba(2, 8, 20, 0.55);
+.glass-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
 }
 
 .section-anchor {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: 5rem;
 }
 
 @keyframes ripple {
@@ -73,42 +63,63 @@ body {
   animation: ripple 600ms ease-out forwards;
 }
 
-/* Wallet adapter tune-up */
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #818cf8;
+}
+
+/* Wallet adapter – light theme override */
 .wallet-adapter-button-trigger {
-  border: 1px solid rgba(124, 92, 255, 0.35) !important;
-  background: linear-gradient(130deg, rgba(124, 92, 255, 0.25), rgba(0, 229, 255, 0.2)) !important;
-  color: #e6edf3 !important;
+  border: 1px solid #c7d2fe !important;
+  background: #f0f4ff !important;
+  color: #3730a3 !important;
   border-radius: 999px !important;
   font-weight: 600 !important;
   font-size: 0.875rem !important;
-  padding: 0.72rem 1.2rem !important;
+  padding: 0.6rem 1.25rem !important;
   height: auto !important;
-  box-shadow: 0 0 26px rgba(124, 92, 255, 0.2) !important;
-  transition: all 0.24s ease !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
 }
 
 .wallet-adapter-button-trigger:hover {
-  border-color: rgba(0, 229, 255, 0.45) !important;
+  border-color: #818cf8 !important;
   transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
 }
 
 .wallet-adapter-modal {
-  background: #0d111c !important;
-  border: 1px solid rgba(139, 155, 176, 0.2) !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e7ff !important;
   border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(99, 102, 241, 0.12) !important;
 }
 
 .wallet-adapter-modal-title {
-  color: #e6edf3 !important;
-  font-family: 'Space Grotesk', 'Sora', sans-serif !important;
+  color: #111827 !important;
+  font-family: 'Inter', sans-serif !important;
 }
 
 .wallet-adapter-button {
-  background: #121a2a !important;
-  border-color: rgba(139, 155, 176, 0.25) !important;
-  color: #e6edf3 !important;
+  background: #f8f7ff !important;
+  border-color: #e0e7ff !important;
+  color: #3730a3 !important;
 }
 
 .wallet-adapter-button:hover {
-  border-color: rgba(124, 92, 255, 0.45) !important;
+  background: #ede9fe !important;
+  border-color: #818cf8 !important;
 }

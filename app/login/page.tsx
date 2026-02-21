@@ -3,9 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Shield, Lock, CheckCircle2, Loader2, Wallet } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Shield, Lock, CheckCircle, Loader2, Wallet, ArrowLeft } from 'lucide-react';
 import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { WalletMultiButton } from '@provablehq/aleo-wallet-adaptor-react-ui';
 import { ALEO_CREDITS } from '@/lib/aleo-client';
@@ -16,28 +14,19 @@ function LoginContent() {
   const role = searchParams.get('role') || 'seeker';
   const [step, setStep] = useState<'connect' | 'verifying' | 'complete'>('connect');
 
-  const { address, connected, connecting } = useWallet();
-
+  const { address, connected } = useWallet();
   const isSeeker = role === 'seeker';
   const requiredCredits = isSeeker ? ALEO_CREDITS.JOB_SEEKER_ACCESS : ALEO_CREDITS.JOB_GIVER_ACCESS;
   const cost = requiredCredits.toString();
   const roleName = isSeeker ? 'Job Seeker' : 'Job Giver';
 
-  // Auto-proceed when wallet connects
   useEffect(() => {
-    if (connected && address && step === 'connect') {
-      handleProceed();
-    }
+    if (connected && address && step === 'connect') handleProceed();
   }, [connected, address]);
 
   const handleProceed = () => {
-    if (!connected || !address) {
-      return;
-    }
-
+    if (!connected || !address) return;
     setStep('verifying');
-
-    // Simulate ZK verification
     setTimeout(() => {
       setStep('complete');
       setTimeout(() => {
@@ -47,167 +36,152 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen container mx-auto px-4 py-24 lg:py-32 flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-16" style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* Soft BG orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute rounded-full opacity-20 blur-3xl" style={{ width: 500, height: 500, background: 'radial-gradient(circle, #818cf8, transparent 70%)', top: '-100px', left: '-100px' }} />
+        <div className="absolute rounded-full opacity-10 blur-3xl" style={{ width: 400, height: 400, background: 'radial-gradient(circle, #a78bfa, transparent 70%)', bottom: '-50px', right: '-50px' }} />
+      </div>
+
       <motion.div
-        className="max-w-md w-full"
-        initial={{ opacity: 0, y: 20 }}
+        className="relative w-full max-w-md"
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <Card glow className="p-8">
+        {/* Back */}
+        <button
+          onClick={() => router.push('/get-started')}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 transition-colors mb-8 font-medium"
+        >
+          <ArrowLeft size={15} />
+          Back
+        </button>
+
+        <div className="bg-white border border-gray-100 rounded-3xl shadow-2xl shadow-indigo-50 p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <motion.div
-              className="w-16 h-16 bg-aleo-purple/20 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-indigo-200"
               animate={step === 'verifying' ? { rotate: 360 } : {}}
               transition={{ duration: 2, repeat: step === 'verifying' ? Infinity : 0 }}
             >
               {step === 'complete' ? (
-                <CheckCircle2 className="text-emerald-400" size={32} />
+                <CheckCircle className="text-white" size={30} />
               ) : (
-                <Shield className="text-aleo-purple-light" size={32} />
+                <Shield className="text-white" size={30} />
               )}
             </motion.div>
-            <h1 className="text-3xl font-bold mb-2 text-white">{roleName} Login</h1>
-            <p className="text-slate-400 text-sm">Connect your Leo Wallet to get started</p>
-            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30">
-              <span className="text-amber-400 text-xs font-medium">TESTNET ONLY</span>
+            <h1 className="text-2xl font-extrabold text-gray-900 mb-1">{roleName} Login</h1>
+            <p className="text-gray-500 text-sm">Connect your Leo Wallet to get started</p>
+            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200">
+              <span className="text-amber-600 text-xs font-semibold">TESTNET ONLY</span>
             </div>
           </div>
 
-          {/* Privacy Message */}
-          <div className="bg-slate-700/50 border border-slate-600 rounded-xl p-4 mb-6">
+          {/* Privacy card */}
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <Lock className="text-aleo-purple-light flex-shrink-0 mt-0.5" size={18} />
+              <Lock className="text-indigo-500 shrink-0 mt-0.5" size={17} />
               <div>
-                <p className="text-white text-sm font-medium mb-1">Privacy Guarantee</p>
-                <p className="text-slate-400 text-xs leading-relaxed">
-                  Your identity stays private. Aleo proves, we don't track.
-                  Zero-knowledge proofs verify your credentials without revealing who you are.
+                <p className="text-indigo-900 text-sm font-semibold mb-0.5">Privacy Guarantee</p>
+                <p className="text-indigo-700 text-xs leading-relaxed">
+                  Your identity stays private. Zero-knowledge proofs verify credentials without revealing who you are.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Wallet Connection UI */}
+          {/* Connect step */}
           {step === 'connect' && (
-            <div className="space-y-4 mb-6">
-              {/* Connected Wallet Display */}
+            <div className="space-y-4">
               {connected && address ? (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4"
+                  className="bg-green-50 border border-green-200 rounded-2xl p-4"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-green-400 text-sm font-medium">Wallet Connected</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-green-700 text-sm font-semibold">Wallet Connected</span>
                   </div>
-                  <p className="text-white font-mono text-sm break-all">{address}</p>
+                  <p className="text-gray-700 font-mono text-xs break-all">{address}</p>
                 </motion.div>
               ) : (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-xl p-4 text-center">
-                  <Wallet className="mx-auto mb-3 text-slate-400" size={32} />
-                  <p className="text-slate-400 text-sm mb-4">
-                    Connect your Leo Wallet to continue
-                  </p>
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 text-center">
+                  <div className="w-12 h-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Wallet className="text-gray-400" size={24} />
+                  </div>
+                  <p className="text-gray-600 text-sm mb-4">Connect your Leo Wallet to continue</p>
                   <WalletMultiButton className="wallet-adapter-button-trigger w-full" />
                 </div>
               )}
 
-              {/* Cost Info */}
-              <div className="bg-aleo-purple/10 border border-aleo-purple/30 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-slate-300 text-sm">Access Cost</span>
-                  <span className="text-aleo-purple-light font-semibold">{cost} Testnet Credit{parseInt(cost) > 1 ? 's' : ''}</span>
+              {/* Cost info */}
+              <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 text-sm">Access cost</span>
+                  <span className="text-indigo-700 font-bold text-sm">
+                    {cost} Testnet Credit{parseInt(cost) > 1 ? 's' : ''}
+                  </span>
                 </div>
-                <p className="text-slate-500 text-xs pt-2 border-t border-slate-600">
-                  ⚠️ Testnet credits only - No real value
+                <p className="text-gray-400 text-xs mt-2 pt-2 border-t border-indigo-100">
+                  Testnet credits only — no real monetary value
                 </p>
               </div>
 
-              {/* Proceed Button (only if connected) */}
               {connected && address && (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full"
+                <button
                   onClick={handleProceed}
-                  glow
+                  className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-semibold py-3.5 rounded-xl hover:shadow-lg hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
-                  <CheckCircle2 className="mr-2" size={18} />
+                  <CheckCircle size={18} />
                   Continue as {roleName}
-                </Button>
+                </button>
               )}
             </div>
           )}
 
-          {/* Verifying State */}
+          {/* Verifying step */}
           {step === 'verifying' && (
-            <>
-              <div className="bg-aleo-purple/10 border border-aleo-purple/30 rounded-xl p-4 mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-slate-300 text-sm">Access Cost</span>
-                  <span className="text-aleo-purple-light font-semibold">{cost} Testnet Credit{parseInt(cost) > 1 ? 's' : ''}</span>
-                </div>
-                <div className="pt-3 border-t border-slate-600 space-y-2">
-                  <div>
-                    <p className="text-slate-400 text-xs mb-1">Connected Wallet:</p>
-                    <p className="text-slate-300 text-sm font-mono break-all">{address}</p>
-                  </div>
-                </div>
+            <div className="text-center py-8">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Loader2 className="text-indigo-500 animate-spin" size={28} />
               </div>
-
-              <motion.div
-                className="text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <Loader2 className="mx-auto mb-4 text-aleo-purple-light animate-spin" size={32} />
-                <p className="text-slate-300 font-medium mb-2">Verifying Credentials</p>
-                <p className="text-slate-400 text-sm">
-                  Using zero-knowledge proofs to verify your access...
-                </p>
-              </motion.div>
-            </>
-          )}
-
-          {/* Complete State */}
-          {step === 'complete' && (
-            <motion.div
-              className="text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
-              <CheckCircle2 className="mx-auto mb-4 text-emerald-400" size={48} />
-              <p className="text-slate-300 font-medium mb-2">Access Granted</p>
-              <p className="text-slate-400 text-sm">Redirecting to your dashboard...</p>
-            </motion.div>
-          )}
-
-          {/* Back Link */}
-          {step === 'connect' && (
-            <div className="text-center mt-6">
-              <button
-                onClick={() => router.push('/get-started')}
-                className="text-slate-400 hover:text-white transition-colors text-sm"
-              >
-                ← Back to Role Selection
-              </button>
+              <p className="text-gray-900 font-semibold mb-1">Verifying Credentials</p>
+              <p className="text-gray-500 text-sm">Using zero-knowledge proofs to verify your access...</p>
+              <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-left">
+                <p className="text-xs text-gray-500 mb-1">Wallet:</p>
+                <p className="text-xs text-gray-700 font-mono break-all">{address}</p>
+              </div>
             </div>
           )}
-        </Card>
+
+          {/* Complete step */}
+          {step === 'complete' && (
+            <motion.div
+              className="text-center py-8"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className="w-16 h-16 bg-green-50 border border-green-200 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <CheckCircle className="text-green-500" size={32} />
+              </div>
+              <p className="text-gray-900 font-bold text-lg mb-1">Access Granted</p>
+              <p className="text-gray-500 text-sm">Redirecting to your dashboard...</p>
+            </motion.div>
+          )}
+        </div>
       </motion.div>
     </div>
   );
 }
 
-// Main export with Suspense boundary for useSearchParams
 export default function Login() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
       </div>
     }>
       <LoginContent />

@@ -26,10 +26,10 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-4">
-                    <div className="max-w-md w-full bg-slate-800 rounded-lg p-6 border border-red-500/50">
-                        <h1 className="text-2xl font-bold mb-4 text-red-400">Something went wrong</h1>
-                        <p className="text-slate-300 mb-4">
+                <div className="min-h-screen flex items-center justify-center bg-white p-4">
+                    <div className="max-w-md w-full bg-white rounded-xl p-6 border border-red-200 shadow-card-soft">
+                        <h1 className="text-2xl font-bold mb-4 text-red-500">Something went wrong</h1>
+                        <p className="text-brand-text-muted mb-4">
                             {this.state.error?.message || 'An unexpected error occurred'}
                         </p>
                         <button
@@ -37,13 +37,13 @@ class ErrorBoundary extends Component<Props, State> {
                                 this.setState({ hasError: false, error: null });
                                 window.location.reload();
                             }}
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                            className="px-4 py-2 bg-brand-primary hover:opacity-90 text-white rounded-lg transition-all"
                         >
                             Reload Page
                         </button>
                         <details className="mt-4">
-                            <summary className="cursor-pointer text-sm text-slate-400">Error details</summary>
-                            <pre className="mt-2 text-xs bg-slate-900 p-4 rounded overflow-auto">
+                            <summary className="cursor-pointer text-sm text-brand-text-muted">Error details</summary>
+                            <pre className="mt-2 text-xs bg-brand-surface p-4 rounded-lg overflow-auto text-brand-text">
                                 {this.state.error?.stack}
                             </pre>
                         </details>

@@ -3,15 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Briefcase, TrendingUp, CheckCircle2, Shield, Loader2 } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Briefcase, TrendingUp, CheckCircle, Shield, Loader2, ArrowRight } from 'lucide-react';
 import { PaymentGate } from '@/components/PaymentGate';
 import { useWallet } from '@provablehq/aleo-wallet-adaptor-react';
 import { CVUpload } from '@/components/CVUpload';
 import { ProfileEditor } from '@/components/ProfileEditor';
 import { supabase } from '@/lib/supabaseClient';
+import { Badge } from '@/components/ui/Badge';
 
 function JobSeekerContent() {
   const { address } = useWallet();
@@ -22,52 +20,29 @@ function JobSeekerContent() {
   const [completedJobsCount, setCompletedJobsCount] = useState(0);
 
   useEffect(() => {
-    if (address) {
-      fetchData();
-    }
+    if (address) fetchData();
   }, [address]);
 
   const fetchData = async () => {
     if (!address) return;
-
     try {
       setLoading(true);
-
-      // 1. Fetch User Profile
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('aleo_address', address)
-        .single();
-
+        .from('users').select('*').eq('aleo_address', address).single();
       if (userError && userError.code !== 'PGRST116') {
         console.error('Error fetching user:', userError);
       } else if (userData) {
         setProfile(userData);
         setReputation(userData.reputation_score || 0);
-
-        // 2. Fetch Applications
         const { data: appsData, error: appsError } = await supabase
           .from('applications')
-          .select(`
-            id,
-            status,
-            created_at,
-            job:jobs (
-              title
-            )
-          `)
+          .select('id, status, created_at, job:jobs ( title )')
           .eq('seeker_id', userData.id)
           .order('created_at', { ascending: false });
-
-        if (appsError) {
-          console.error('Error fetching applications:', appsError);
-        } else {
+        if (appsError) console.error('Error fetching applications:', appsError);
+        else {
           setApplications(appsData || []);
-
-          // Count completed (accepted) jobs for display
-          const completed = appsData?.filter((a: any) => a.status === 'accepted').length || 0;
-          setCompletedJobsCount(completed);
+          setCompletedJobsCount(appsData?.filter((a: any) => a.status === 'accepted').length || 0);
         }
       }
     } catch (error) {
@@ -77,198 +52,157 @@ function JobSeekerContent() {
     }
   };
 
-  const handleProfileUpdate = () => {
-    fetchData();
-  };
+  const handleProfileUpdate = () => fetchData();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-purple-500" size={48} />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="animate-spin text-indigo-500" size={40} />
       </div>
     );
   }
 
+  const stats = [
+    { label: 'Applications', value: applications.length, icon: Briefcase, color: 'indigo' },
+    { label: 'Completed', value: completedJobsCount, icon: CheckCircle, color: 'green' },
+    { label: 'Reputation', value: reputation, suffix: '/1000', icon: TrendingUp, color: 'violet' },
+  ];
+
+  const statusVariant = (status: string) =>
+    status === 'accepted' ? 'success' : status === 'rejected' ? 'destructive' : 'info';
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const days = Math.floor(diff / 86400000);
+    return days > 0 ? `${days}d ago` : 'Today';
+  };
+
   return (
-    <div className="min-h-screen container mx-auto px-4 py-8 lg:py-12">
-      {/* Header */}
-      <motion.div
-        className="mb-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-4xl md:text-5xl font-bold mb-3 text-text-primary tracking-tight">Job Seeker Dashboard</h1>
-        <p className="text-text-secondary text-lg">Welcome back. Your privacy is protected.</p>
-      </motion.div>
+    <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* Soft top gradient */}
+      <div className="h-1.5 bg-gradient-to-r from-indigo-500 to-violet-600" />
 
-      {/* Connected Wallet Info */}
-      {address && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 border border-success/20 rounded-xl">
-            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-            <span className="text-success text-sm font-medium">Connected:</span>
-            <span className="text-text-primary font-mono text-sm">{address.slice(0, 10)}...{address.slice(-6)}</span>
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        {/* Header */}
+        <motion.div className="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Job Seeker Dashboard</h1>
+            <p className="text-gray-500">Welcome back. Your privacy is protected.</p>
           </div>
-        </motion.div>
-      )}
-
-      {/* Stats Grid */}
-      <div className="grid md:grid-cols-3 gap-6 mb-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="p-6">
-            <div className="w-14 h-14 bg-accent-primary/10 rounded-xl flex items-center justify-center mb-5 border border-accent-primary/20">
-              <Briefcase className="text-accent-primary" size={24} />
+          {address && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-xl">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-green-700 text-sm font-medium">Connected:</span>
+              <span className="text-gray-700 font-mono text-sm">{address.slice(0, 10)}...{address.slice(-6)}</span>
             </div>
-            <p className="text-text-secondary text-sm mb-2 font-medium">Active Applications</p>
-            <p className="text-4xl font-bold text-text-primary">{applications.length}</p>
-          </Card>
+          )}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="p-6">
-            <div className="w-14 h-14 bg-success/10 rounded-xl flex items-center justify-center mb-5 border border-success/20">
-              <CheckCircle2 className="text-success" size={24} />
-            </div>
-            <p className="text-text-secondary text-sm mb-2 font-medium">Completed Jobs</p>
-            <p className="text-4xl font-bold text-text-primary">{completedJobsCount}</p>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="p-6">
-            <div className="w-14 h-14 bg-accent-secondary/10 rounded-xl flex items-center justify-center mb-5 border border-accent-secondary/20">
-              <TrendingUp className="text-accent-secondary" size={24} />
-            </div>
-            <p className="text-text-secondary text-sm mb-2 font-medium">Reputation</p>
-            <div className="flex items-baseline gap-2">
-              <p className="text-4xl font-bold text-text-primary">{reputation}</p>
-              <span className="text-text-muted">/1000</span>
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Profile Summary */}
-          <Card className="p-6 md:p-8">
-            <div className="flex items-start justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-text-primary mb-3">Profile Summary</h2>
-                <div className="flex items-center gap-2 text-sm text-text-secondary">
-                  <Shield size={16} className="text-accent-primary" />
-                  <span>Identity protected via ZK proofs</span>
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+          {stats.map((stat, i) => {
+            const Icon = stat.icon;
+            const colorMap: Record<string, string> = { indigo: 'bg-indigo-50 text-indigo-600', green: 'bg-green-50 text-green-600', violet: 'bg-violet-50 text-violet-600' };
+            return (
+              <motion.div key={stat.label}
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-white border border-gray-100 rounded-2xl p-7 hover:border-indigo-200 hover:shadow-lg transition-all"
+              >
+                <div className={`w-12 h-12 rounded-xl ${colorMap[stat.color]} flex items-center justify-center mb-4`}>
+                  <Icon size={22} />
                 </div>
-              </div>
-            </div>
-
-            {/* Reputation Ring */}
-            <div className="relative w-36 h-36 mx-auto mb-6">
-              <svg className="transform -rotate-90 w-36 h-36">
-                <circle
-                  cx="72"
-                  cy="72"
-                  r="64"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="none"
-                  className="text-bg-hover"
-                />
-                <circle
-                  cx="72"
-                  cy="72"
-                  r="64"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeDasharray={`${(reputation / 1000) * 402} 402`}
-                  className="text-accent-primary transition-all duration-1000"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-text-primary">{reputation}</p>
-                  <p className="text-xs text-text-muted mt-1">Score</p>
+                <p className="text-gray-500 text-sm font-medium mb-1">{stat.label}</p>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-extrabold text-gray-900">{stat.value}</p>
+                  {stat.suffix && <span className="text-gray-400 text-sm">{stat.suffix}</span>}
                 </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Active Applications */}
-          <Card className="p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-text-primary mb-6">Your Applications</h2>
-            {applications.length > 0 ? (
-              <div className="space-y-4">
-                {applications.map((app) => (
-                  <div
-                    key={app.id}
-                    className="bg-bg-hover rounded-xl p-5 border border-border-subtle flex items-center justify-between hover:border-border-accent transition-colors"
-                  >
-                    <div>
-                      <h3 className="text-text-primary font-semibold mb-1">{app.job?.title || 'Unknown Job'}</h3>
-                      <p className="text-text-secondary text-sm">Applied {new Date(app.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <Badge variant={app.status === 'accepted' ? 'success' : app.status === 'rejected' ? 'destructive' : 'info'}>
-                      {app.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Briefcase className="mx-auto mb-4 text-text-muted" size={48} />
-                <p className="text-text-secondary mb-2">No applications found.</p>
-                <p className="text-text-muted text-sm">Start applying to jobs to see them here.</p>
-              </div>
-            )}
-          </Card>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Right Column - Profile & CV */}
-        <div className="space-y-6">
-          {/* Profile Editor */}
-          {address && (
-            <ProfileEditor aleoAddress={address} onUpdate={handleProfileUpdate} />
-          )}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Reputation Ring */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Profile Summary</h2>
+                <div className="flex items-center gap-2 text-sm text-indigo-600">
+                  <Shield size={15} />
+                  <span className="text-xs">ZK protected identity</span>
+                </div>
+              </div>
+              <div className="relative w-36 h-36 mx-auto">
+                <svg className="transform -rotate-90 w-36 h-36">
+                  <circle cx="72" cy="72" r="64" stroke="#f3f4f6" strokeWidth="8" fill="none" />
+                  <circle
+                    cx="72" cy="72" r="64"
+                    stroke="url(#rep-gradient)" strokeWidth="8" fill="none"
+                    strokeDasharray={`${(reputation / 1000) * 402} 402`}
+                    strokeLinecap="round"
+                  />
+                  <defs>
+                    <linearGradient id="rep-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-4xl font-extrabold text-gray-900">{reputation}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Score</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          {/* CV Upload */}
-          {address && (
-            <CVUpload
-              aleoAddress={address}
-              existingCV={profile?.cv}
-              onUploadSuccess={handleProfileUpdate}
-            />
-          )}
+            {/* Applications */}
+            <div className="bg-white border border-gray-100 rounded-2xl p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Your Applications</h2>
+              {applications.length > 0 ? (
+                <div className="space-y-3">
+                  {applications.map(app => (
+                    <div key={app.id}
+                      className="bg-gray-50 rounded-xl p-5 border border-gray-100 flex items-center justify-between hover:border-indigo-200 hover:bg-indigo-50/30 transition-all"
+                    >
+                      <div>
+                        <h3 className="text-gray-900 font-semibold text-sm">{app.job?.title || 'Unknown Job'}</h3>
+                        <p className="text-gray-500 text-xs mt-0.5">Applied {timeAgo(app.created_at)}</p>
+                      </div>
+                      <Badge variant={statusVariant(app.status)}>{app.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-14">
+                  <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Briefcase className="text-indigo-400" size={26} />
+                  </div>
+                  <p className="text-gray-700 font-semibold mb-1">No applications yet</p>
+                  <p className="text-gray-400 text-sm mb-5">Start applying to jobs to see them here.</p>
+                  <Link href="/jobs" className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-indigo-100 transition-all">
+                    Browse Jobs <ArrowRight size={14} />
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Quick Actions */}
-          <Card className="p-6">
-            <h3 className="text-xl font-bold text-text-primary mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <Link href="/jobs">
-                <Button variant="primary" size="md" className="w-full">
-                  Browse Jobs
-                </Button>
+          {/* Right Column */}
+          <div className="space-y-5">
+            {address && <ProfileEditor aleoAddress={address} onUpdate={handleProfileUpdate} />}
+            {address && <CVUpload aleoAddress={address} existingCV={profile?.cv} onUploadSuccess={handleProfileUpdate} />}
+            <div className="bg-white border border-gray-100 rounded-2xl p-6">
+              <h3 className="font-bold text-gray-900 mb-4">Quick Actions</h3>
+              <Link href="/jobs" className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg hover:shadow-indigo-100 transition-all">
+                Browse Jobs <ArrowRight size={15} />
               </Link>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>
@@ -287,4 +221,3 @@ export default function JobSeekerDashboard() {
     </PaymentGate>
   );
 }
-

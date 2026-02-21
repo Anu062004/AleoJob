@@ -11,33 +11,13 @@
 }
 
 :root {
-  /* Premium Dark Theme Colors */
-  --bg-primary: #0A0A0F;
-  --bg-secondary: #111118;
-  --bg-elevated: #1A1A24;
-  --bg-hover: #242430;
-  
-  /* Accent Colors - Elegant Purple/Indigo */
   --accent-primary: #6366F1;
-  --accent-primary-hover: #818CF8;
-  --accent-secondary: #06B6D4;
-  --accent-muted: #475569;
-  
-  /* Text Colors */
-  --text-primary: #F8FAFC;
-  --text-secondary: #CBD5E1;
-  --text-muted: #94A3B8;
-  --text-disabled: #64748B;
-  
-  /* Border Colors */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-accent: rgba(99, 102, 241, 0.3);
-  
-  /* Status Colors */
-  --success: #10B981;
-  --warning: #F59E0B;
-  --error: #EF4444;
-  --info: #3B82F6;
+  --accent-violet: #8b5cf6;
+  --bg-soft: #f8f7ff;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -47,76 +27,44 @@ body {
   min-height: 100vh;
   color: #111827;
   letter-spacing: -0.01em;
-}
-
-@layer utilities {
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-indigo-500 to-cyan-400;
-  }
-  
-  .text-gradient-subtle {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-indigo-500;
-  }
-  
-  .bg-glass {
-    background: rgba(26, 26, 36, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-  
-  .bg-glass-elevated {
-    background: rgba(26, 26, 36, 0.8);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
+  background: #ffffff;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent-muted);
+  background: #c7d2fe;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
+  background: #818cf8;
 }
 
 /* Wallet Adapter Styles */
 .wallet-adapter-button-trigger {
-  background: var(--bg-elevated) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid var(--border-subtle) !important;
+  background: #f8f7ff !important;
+  border: 1px solid #e0e7ff !important;
   border-radius: 0.75rem !important;
-  color: var(--text-primary) !important;
+  color: #3730a3 !important;
   font-weight: 600 !important;
   font-size: 0.875rem !important;
-  line-height: 1.25rem !important;
   padding: 0.625rem 1.5rem !important;
   height: auto !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  position: relative !important;
-  overflow: hidden !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
 }
 
 .wallet-adapter-button-trigger:hover {
   transform: translateY(-1px) !important;
-  background: var(--bg-hover) !important;
-  border-color: var(--border-accent) !important;
+  border-color: #818cf8 !important;
   box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.2) !important;
-}
-
-.wallet-adapter-button-trigger:active {
-  transform: translateY(0) scale(0.98) !important;
 }
 
 .wallet-adapter-modal-wrapper {
@@ -124,30 +72,28 @@ body {
 }
 
 .wallet-adapter-modal {
-  background: var(--bg-elevated) !important;
-  backdrop-filter: blur(16px) !important;
-  border: 1px solid var(--border-subtle) !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e7ff !important;
   border-radius: 1rem !important;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.12) !important;
 }
 
 .wallet-adapter-modal-title {
-  color: var(--text-primary) !important;
+  color: #111827 !important;
   font-size: 1.5rem !important;
   font-weight: 700 !important;
 }
 
 .wallet-adapter-button {
-  background: var(--bg-elevated) !important;
-  border: 1px solid var(--border-subtle) !important;
+  background: #f8f7ff !important;
+  border: 1px solid #e0e7ff !important;
   border-radius: 0.5rem !important;
-  color: var(--text-primary) !important;
+  color: #3730a3 !important;
   transition: all 0.2s ease !important;
   margin: 0.25rem 0 !important;
 }
 
 .wallet-adapter-button:hover {
-  background: var(--bg-hover) !important;
-  border-color: var(--border-accent) !important;
-  transform: translateX(2px) !important;
+  background: #ede9fe !important;
+  border-color: #818cf8 !important;
 }

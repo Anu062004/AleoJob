@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { Upload, FileText, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
@@ -209,7 +209,7 @@ export function CVUpload({ aleoAddress, onUploadSuccess, existingCV, forceSeeker
       <div className="mb-4 flex items-start justify-between">
         <div>
           <h3 className="mb-2 text-xl font-bold text-white">{hasCv ? 'Your CV' : 'Upload Your CV'}</h3>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-brand-text-muted">
             Your CV is required for seeker onboarding and reputation scoring.
           </p>
         </div>
@@ -222,8 +222,8 @@ export function CVUpload({ aleoAddress, onUploadSuccess, existingCV, forceSeeker
       </div>
 
       {hasCv && !success && (
-        <div className="mb-4 rounded-lg border border-slate-600 bg-slate-700/50 p-3">
-          <div className="flex items-center gap-2 text-sm text-slate-300">
+        <div className="mb-4 rounded-lg border border-brand-border bg-brand-surface p-3">
+          <div className="flex items-center gap-2 text-sm text-brand-text">
             <FileText size={16} />
             <span>
               Last uploaded on {existingCV?.uploadedAt ? new Date(existingCV.uploadedAt).toLocaleDateString() : 'N/A'}
@@ -235,7 +235,7 @@ export function CVUpload({ aleoAddress, onUploadSuccess, existingCV, forceSeeker
       <div className="space-y-4">
         {readOnlyCvState ? (
           <div className="space-y-3">
-            <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-4 text-sm text-slate-300">
+            <div className="rounded-lg border border-brand-border bg-brand-surface p-4 text-sm text-brand-text">
               CV already submitted for this wallet. Adding another CV is disabled.
               Use <span className="font-medium text-white">Edit CV</span> to replace it.
             </div>
@@ -245,7 +245,7 @@ export function CVUpload({ aleoAddress, onUploadSuccess, existingCV, forceSeeker
           </div>
         ) : (
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">Select PDF File (Max 5 MB)</label>
+            <label className="mb-2 block text-sm font-medium text-brand-text">Select PDF File (Max 5 MB)</label>
             <div className="flex items-center gap-4">
               <input
                 ref={fileInputRef}
@@ -257,10 +257,10 @@ export function CVUpload({ aleoAddress, onUploadSuccess, existingCV, forceSeeker
                 disabled={uploading}
               />
               <label htmlFor="cv-upload-input" className="flex-1 cursor-pointer">
-                <div className="rounded-lg border-2 border-dashed border-slate-600 p-6 text-center transition-colors hover:border-purple-500/50">
-                  <Upload className="mx-auto mb-2 text-slate-400" size={32} />
-                  <p className="text-sm text-slate-300">{selectedFile ? selectedFile.name : 'Click to select PDF file'}</p>
-                  <p className="mt-1 text-xs text-slate-500">PDF only, max 5 MB</p>
+                <div className="rounded-lg border-2 border-dashed border-brand-border p-6 text-center transition-colors hover:border-brand-primary/50">
+                  <Upload className="mx-auto mb-2 text-brand-text-muted" size={32} />
+                  <p className="text-sm text-brand-text">{selectedFile ? selectedFile.name : 'Click to select PDF file'}</p>
+                  <p className="mt-1 text-xs text-brand-text-muted">PDF only, max 5 MB</p>
                 </div>
               </label>
             </div>
@@ -268,12 +268,12 @@ export function CVUpload({ aleoAddress, onUploadSuccess, existingCV, forceSeeker
         )}
 
         {selectedFile && (
-          <div className="flex items-center justify-between rounded-lg border border-slate-600 bg-slate-700/50 p-3">
+          <div className="flex items-center justify-between rounded-lg border border-brand-border bg-brand-surface p-3">
             <div className="flex items-center gap-3">
               <FileText className="text-purple-400" size={20} />
               <div>
                 <p className="text-sm font-medium text-white">{selectedFile.name}</p>
-                <p className="text-xs text-slate-400">{formatFileSize(selectedFile.size)}</p>
+                <p className="text-xs text-brand-text-muted">{formatFileSize(selectedFile.size)}</p>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={handleRemove} disabled={uploading}>
@@ -330,10 +330,11 @@ export function CVUpload({ aleoAddress, onUploadSuccess, existingCV, forceSeeker
           </div>
         )}
 
-        <p className="text-center text-xs italic text-slate-500">
+        <p className="text-center text-xs italic text-brand-text-muted">
           Note: This requires a "cvs" storage bucket in your Supabase project.
         </p>
       </div>
     </Card>
   );
 }
+

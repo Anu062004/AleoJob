@@ -19,12 +19,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const [theme, setThemeState] = useState<Theme>(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('theme') as Theme;
-            return saved || 'dark';
+            // Always default to light; ignore any persisted 'dark' from old sessions
+            return (saved && saved !== 'dark') ? saved : 'light';
         }
-        return 'dark';
+        return 'light';
     });
 
-    const [isDarkMode, setIsDarkMode] = useState(true);
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
     // Update dark mode based on theme
     useEffect(() => {

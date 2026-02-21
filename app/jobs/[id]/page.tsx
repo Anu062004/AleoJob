@@ -2,34 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, DollarSign, Star, Loader2, Calendar, Shield } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Clock, DollarSign, Star, Loader2, Calendar, Shield, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import Link from 'next/link';
 
 export default function JobDetail({ params }: { params: { id: string } }) {
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchJob();
-  }, [params.id]);
+  useEffect(() => { fetchJob(); }, [params.id]);
 
   const fetchJob = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('jobs')
-        .select(`
-          *,
-          giver:users (
-            aleo_address,
-            reputation_score
-          )
-        `)
+        .select('*, giver:users ( aleo_address, reputation_score )')
         .eq('id', params.id)
         .single();
-
       if (error) throw error;
       setJob(data);
     } catch (error) {
@@ -41,106 +31,110 @@ export default function JobDetail({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white flex items-center justify-center">
-        <Loader2 className="animate-spin text-purple-400" size={48} />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="animate-spin text-indigo-500" size={40} />
       </div>
     );
   }
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Job Not Found</h1>
-          <a href="/jobs" className="text-purple-400 hover:text-purple-300 transition-colors">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Job Not Found</h1>
+          <Link href="/jobs" className="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
             ← Back to All Jobs
-          </a>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <a href="/jobs" className="text-purple-400 hover:text-purple-300 mb-6 inline-block transition-colors">
-              ← Back to All Jobs
-            </a>
+    <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <Link href="/jobs" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium mb-8">
+            <ArrowLeft size={15} /> Back to All Jobs
+          </Link>
 
-            <Card className="p-8 bg-gray-800/50 border-purple-500/30">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
-                <div>
-                  <h1 className="text-4xl font-bold mb-2">{job.title}</h1>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <Clock size={16} />
-                      <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
+          <div className="bg-white border border-gray-100 rounded-3xl p-10 shadow-sm">
+            {/* Job Header */}
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8 pb-8 border-b border-gray-100">
+              <div>
+                <h1 className="text-3xl font-extrabold text-gray-900 mb-3">{job.title}</h1>
+                <div className="flex flex-wrap gap-5 text-sm text-gray-500">
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={15} className="text-gray-400" />
+                    <span>Posted {new Date(job.created_at).toLocaleDateString()}</span>
+                  </div>
+                  {job.budget && (
+                    <div className="flex items-center gap-1.5">
+                      <DollarSign size={15} className="text-green-500" />
+                      <span className="font-semibold text-gray-900">{job.budget}</span>
                     </div>
-                    {job.budget && (
-                      <div className="flex items-center gap-1">
-                        <DollarSign size={16} className="text-emerald-400" />
-                        <span>{job.budget}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-purple-900/40 px-4 py-2 rounded-xl border border-purple-500/20">
-                  <Star size={16} className="text-yellow-400" />
-                  <span className="text-sm">Giver Rep: {job.giver?.reputation_score || 0}</span>
+                  )}
                 </div>
               </div>
-
-              <div className="prose prose-invert max-w-none mb-8">
-                <h3 className="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">Description</h3>
-                <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                  {job.description}
-                </p>
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-2 rounded-xl">
+                <Star size={15} className="text-amber-500 fill-amber-400" />
+                <span className="text-sm font-semibold text-amber-800">Giver Rep: {job.giver?.reputation_score || 0}</span>
               </div>
+            </div>
 
-              {job.skills && job.skills.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">Required Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill: string) => (
-                      <span
-                        key={skill}
-                        className="px-4 py-2 bg-purple-600/20 text-purple-300 rounded-lg text-sm border border-purple-500/10"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+            {/* Description */}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Description</h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{job.description}</p>
+            </div>
 
-              <div className="grid md:grid-cols-2 gap-6 p-6 bg-gray-900/50 rounded-2xl border border-gray-700/50">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400">
-                    <Calendar size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Status</p>
-                    <p className="font-semibold">{job.is_active ? 'Active' : 'Expired'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400">
-                    <Shield size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Verification</p>
-                    <p className="font-semibold">ZK Proof Verified</p>
-                  </div>
+            {/* Skills */}
+            {job.skills && job.skills.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Required Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {job.skills.map((skill: string) => (
+                    <span key={skill} className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1.5 rounded-full font-medium">
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </Card>
-          </motion.div>
-        </div>
+            )}
+
+            {/* Meta Grid */}
+            <div className="grid md:grid-cols-2 gap-4 bg-gray-50 rounded-2xl p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center">
+                  <Calendar size={20} className="text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-0.5">Status</p>
+                  <p className="font-bold text-gray-900">{job.is_active ? 'Active' : 'Expired'}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-11 h-11 bg-green-50 rounded-xl flex items-center justify-center">
+                  <Shield size={20} className="text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-0.5">Verification</p>
+                  <p className="font-bold text-gray-900">ZK Proof Verified</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Apply CTA */}
+            <div className="mt-8 flex gap-4">
+              <Link
+                href="/jobs"
+                className="flex-1 text-center bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-semibold py-3.5 rounded-xl hover:shadow-lg hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all"
+              >
+                Apply Now
+              </Link>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

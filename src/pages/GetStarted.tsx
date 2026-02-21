@@ -48,16 +48,16 @@ function GetStarted() {
   };
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="min-h-screen py-12 bg-white">
       <div className="container mx-auto max-w-2xl px-6">
         <div className="mb-10 text-center">
-          <h1 className="mb-2 text-2xl font-semibold text-white">Get Started</h1>
-          <p className="text-slate-500">Choose role once per wallet. Role is immutable after assignment.</p>
+          <h1 className="mb-2 text-2xl font-semibold text-brand-text">Get Started</h1>
+          <p className="text-brand-text-muted">Choose role once per wallet. Role is immutable after assignment.</p>
         </div>
 
         {!connected && (
-          <div className="mb-8 rounded-xl border border-slate-800 bg-slate-900 p-5 text-center">
-            <p className="mb-4 text-slate-400">Connect wallet to continue</p>
+          <div className="mb-8 rounded-xl border border-brand-border bg-brand-surface p-5 text-center">
+            <p className="mb-4 text-brand-text-muted">Connect wallet to continue</p>
             <div className="flex justify-center">
               <ConnectWallet />
             </div>
@@ -65,7 +65,7 @@ function GetStarted() {
         )}
 
         {connected && loadingRole && (
-          <div className="mb-8 rounded-xl border border-slate-800 bg-slate-900 p-5 text-center text-slate-400">
+          <div className="mb-8 rounded-xl border border-brand-border bg-brand-surface p-5 text-center text-brand-text-muted">
             <div className="inline-flex items-center gap-2">
               <Loader2 className="animate-spin" size={16} />
               Resolving role lock...
@@ -92,19 +92,18 @@ function GetStarted() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <div
-            className={`rounded-xl border p-6 ${
-              !connected || assignedRole === 'giver'
-                ? 'pointer-events-none border-slate-800 bg-slate-900/50 opacity-50'
-                : 'border-slate-800 bg-slate-900/50 transition-colors hover:border-slate-700'
-            }`}
+            className={`rounded-xl border p-6 transition-all ${!connected || assignedRole === 'giver'
+              ? 'pointer-events-none border-brand-border bg-brand-surface opacity-50'
+              : 'border-brand-border bg-white hover:border-brand-primary/40 hover:shadow-card-soft'
+              }`}
           >
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800">
-                <User className="text-violet-400" size={20} />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50">
+                <User className="text-brand-primary" size={20} />
               </div>
-              <h2 className="mb-2 font-medium text-white">Job Seeker</h2>
-              <p className="mb-4 text-sm text-slate-500">Find work, submit proof, build reputation</p>
-              <ul className="mb-6 space-y-2 text-left text-sm text-slate-500">
+              <h2 className="mb-2 font-semibold text-brand-text">Job Seeker</h2>
+              <p className="mb-4 text-sm text-brand-text-muted">Find work, submit proof, build reputation</p>
+              <ul className="mb-6 space-y-2 text-left text-sm text-brand-text-muted">
                 <li>- Mandatory onboarding: email, qualification, experience, CV</li>
                 <li>- Submit proof of work on-chain</li>
                 <li>- 1 credit seeker access</li>
@@ -122,19 +121,18 @@ function GetStarted() {
           </div>
 
           <div
-            className={`rounded-xl border p-6 ${
-              !connected || assignedRole === 'seeker'
-                ? 'pointer-events-none border-slate-800 bg-slate-900/50 opacity-50'
-                : 'border-slate-800 bg-slate-900/50 transition-colors hover:border-slate-700'
-            }`}
+            className={`rounded-xl border p-6 transition-all ${!connected || assignedRole === 'seeker'
+              ? 'pointer-events-none border-brand-border bg-brand-surface opacity-50'
+              : 'border-brand-border bg-white hover:border-brand-primary/40 hover:shadow-card-soft'
+              }`}
           >
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800">
-                <Briefcase className="text-violet-400" size={20} />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-violet-50">
+                <Briefcase className="text-brand-secondary" size={20} />
               </div>
-              <h2 className="mb-2 font-medium text-white">Job Giver</h2>
-              <p className="mb-4 text-sm text-slate-500">Post jobs, verify proof, release escrow</p>
-              <ul className="mb-6 space-y-2 text-left text-sm text-slate-500">
+              <h2 className="mb-2 font-semibold text-brand-text">Job Giver</h2>
+              <p className="mb-4 text-sm text-brand-text-muted">Post jobs, verify proof, release escrow</p>
+              <ul className="mb-6 space-y-2 text-left text-sm text-brand-text-muted">
                 <li>- Reputation from jobs posted and escrow generated</li>
                 <li>- Verify seeker proof before release</li>
                 <li>- 3 credits giver access</li>

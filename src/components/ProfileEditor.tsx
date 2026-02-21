@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { User, Save, Loader2 } from 'lucide-react';
@@ -237,7 +237,7 @@ export function ProfileEditor({ aleoAddress, onUpdate, requireSeekerFields = fal
         <div>
           <h3 className="mb-2 text-xl font-bold text-white">Your Profile</h3>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-400">Profile Completeness:</span>
+            <span className="text-sm text-brand-text-muted">Profile Completeness:</span>
             <Badge variant={completeness >= 80 ? 'success' : completeness >= 50 ? 'info' : 'warning'}>
               {completeness}%
             </Badge>
@@ -255,14 +255,14 @@ export function ProfileEditor({ aleoAddress, onUpdate, requireSeekerFields = fal
 
       <div className="space-y-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-300">
+          <label className="mb-2 block text-sm font-medium text-brand-text">
             Email {requireSeekerFields ? '(Required)' : '(Optional)'}
           </label>
           <input
             type="email"
             value={formData.email}
             onChange={(event) => setFormData({ ...formData, email: event.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full rounded-lg border border-brand-border bg-white px-4 py-2 text-brand-text focus:border-brand-primary focus:outline-none"
             placeholder="you@example.com"
             disabled={!isEditing || saving}
             required={requireSeekerFields}
@@ -270,25 +270,25 @@ export function ProfileEditor({ aleoAddress, onUpdate, requireSeekerFields = fal
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-300">Name (Optional)</label>
+          <label className="mb-2 block text-sm font-medium text-brand-text">Name (Optional)</label>
           <input
             type="text"
             value={formData.name}
             onChange={(event) => setFormData({ ...formData, name: event.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full rounded-lg border border-brand-border bg-white px-4 py-2 text-brand-text focus:border-brand-primary focus:outline-none"
             placeholder="Display name"
             disabled={!isEditing || saving}
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-300">
+          <label className="mb-2 block text-sm font-medium text-brand-text">
             Qualification {requireSeekerFields ? '(Required)' : ''}
           </label>
           <select
             value={formData.educationLevel}
             onChange={(event) => setFormData({ ...formData, educationLevel: event.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full rounded-lg border border-brand-border bg-white px-4 py-2 text-brand-text focus:border-brand-primary focus:outline-none"
             disabled={!isEditing || saving}
             required={requireSeekerFields}
           >
@@ -303,20 +303,20 @@ export function ProfileEditor({ aleoAddress, onUpdate, requireSeekerFields = fal
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-300">Experience (Years)</label>
+          <label className="mb-2 block text-sm font-medium text-brand-text">Experience (Years)</label>
           <input
             type="number"
             min="0"
             value={formData.experienceYears}
             onChange={(event) => setFormData({ ...formData, experienceYears: parseInt(event.target.value, 10) || 0 })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full rounded-lg border border-brand-border bg-white px-4 py-2 text-brand-text focus:border-brand-primary focus:outline-none"
             placeholder="0"
             disabled={!isEditing || saving}
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-300">
+          <label className="mb-2 block text-sm font-medium text-brand-text">
             Skills ({formData.skills.length} / 5+ recommended)
           </label>
           <div className="mb-2 flex gap-2">
@@ -330,7 +330,7 @@ export function ProfileEditor({ aleoAddress, onUpdate, requireSeekerFields = fal
                   addSkill();
                 }
               }}
-              className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none"
+              className="flex-1 rounded-lg border border-brand-border bg-white px-4 py-2 text-brand-text focus:border-brand-primary focus:outline-none"
               placeholder="Add a skill"
               disabled={!isEditing || saving}
             />
@@ -386,7 +386,7 @@ export function ProfileEditor({ aleoAddress, onUpdate, requireSeekerFields = fal
             </Button>
           </div>
         ) : (
-          <p className="text-center text-xs italic text-slate-500">
+          <p className="text-center text-xs italic text-brand-text-muted">
             Profile is saved. Use "Edit Profile" anytime to upgrade your details.
           </p>
         )}
@@ -394,3 +394,4 @@ export function ProfileEditor({ aleoAddress, onUpdate, requireSeekerFields = fal
     </Card>
   );
 }
+
